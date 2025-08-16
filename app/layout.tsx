@@ -37,9 +37,22 @@ export default function RootLayout({
             <Link href="/" style={{ color: 'white', textDecoration: 'none' }}>Trang chủ</Link>
             <Link href="/gioi-thieu" style={{ color: 'white', textDecoration: 'none' }}>Giới thiệu</Link>
             <Link href="/lien-he" style={{ color: 'white', textDecoration: 'none' }}>Liên hệ</Link>
+            <Link href="/danh-muc" style={{ color: 'white', textDecoration: 'none' }}>Danh mục</Link>
+            <Link href="/bai-viet" style={{ color: 'white', textDecoration: 'none' }}>Bài viết</Link>
+            <Link href="/chu-de" style={{ color: 'white', textDecoration: 'none' }}>Chủ đề</Link>
+            <Link href="/bai-hoc" style={{ color: 'white', textDecoration: 'none' }}>Bài Học</Link>
           </nav>
         </header>
-        <main style={{ padding: '2rem' }}>
+        <main style={{
+          padding: '2rem',
+          backgroundColor: '#FFB3BA',
+          boxShadow: '#F8AFCF',
+          borderRadius: '8px',
+          margin: '2rem auto',
+           width: 'calc(100vw - 60px)',
+
+        }}
+          >
           {children}
         </main>
       </body>
