@@ -1,28 +1,18 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+"use client";
+import { useEffect } from "react";
 import "./globals.css";
 import Link from 'next/link'
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Website Hỗ Trợ Môn Học Giáo Dục Địa Phương 6",
-  description: "Website được thiết kế bởi Bùi Đức Trí",
-};
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+   useEffect(() => {
+    AOS.init({ duration: 800, once: true });
+  }, []);
   return (
     <html lang="vi">
       <body>

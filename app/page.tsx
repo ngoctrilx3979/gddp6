@@ -1,62 +1,36 @@
 import Image from "next/image";
 import LatestPosts from "./components/LatestPosts";
 import LatestLessons from "./components/LatestLessons";
+import Hero from "./components/Hero";
+import WhyChooseUs from "./components/WhyChooseUs";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-         <LatestPosts />
-        <LatestLessons />
-
-       
+    <div className="flex flex-col min-h-screen">
+      {/* Nội dung chính */}
+      <main className="flex-1">
+        <Hero />
+        <div className="px-8 sm:px-20 py-12 flex flex-col gap-16">
+          <WhyChooseUs/>
+          <LatestLessons />
+          <LatestPosts />          
+        </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Địa chỉ:10A Ngô Thời Nhậm, Phường Mỹ Long
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Sdt: 0938693693
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
+
+      {/* Footer */}
+      <footer className="bg-gray-100 py-6 flex gap-6 flex-wrap items-center justify-center text-sm text-gray-700">
+        <div className="flex items-center gap-2">
+          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
+          Địa chỉ: 10A Ngô Thời Nhậm, Phường Mỹ Long
+        </div>
+        <div className="flex items-center gap-2">
+          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
+          SĐT: 0938693693
+        </div>
+        <div className="flex items-center gap-2">
+          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
           Email: ngoctrilx3979@gmail.com
-        </a>
+        </div>
       </footer>
     </div>
   );
