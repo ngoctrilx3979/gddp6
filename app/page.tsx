@@ -3,7 +3,8 @@ import LatestPosts from "./components/LatestPosts";
 import LatestLessons from "./components/LatestLessons";
 import Hero from "./components/Hero";
 import WhyChooseUs from "./components/WhyChooseUs";
-
+import Testimonials from "./components/Testimonials";
+import Footer from "./components/Footer";
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -13,7 +14,9 @@ export default function Home() {
         <div className="px-8 sm:px-20 py-12 flex flex-col gap-16">
           <WhyChooseUs/>
           <LatestLessons />
-          <LatestPosts />          
+          <LatestPosts />  
+          <Testimonials />         
+          <Footer/>         
         </div>
       </main>
 

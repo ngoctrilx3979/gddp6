@@ -31,6 +31,7 @@ export default function RootLayout({
             <Link href="/bai-viet" style={{ color: 'white', textDecoration: 'none' }}>Bài viết</Link>
             <Link href="/chu-de" style={{ color: 'white', textDecoration: 'none' }}>Chủ đề</Link>
             <Link href="/bai-hoc" style={{ color: 'white', textDecoration: 'none' }}>Bài Học</Link>
+            <Link href="/dang-nhap" style={{ color: 'white', textDecoration: 'none' }}>Đăng Nhập</Link>
           </nav>
         </header>
         <main style={{

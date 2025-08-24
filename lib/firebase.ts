@@ -1,6 +1,7 @@
 // lib/firebase.ts
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDH6_zclviM6KZ0VfL7jRZQwtOOMqQYj0",
@@ -9,10 +10,17 @@ const firebaseConfig = {
   storageBucket: "gddp6-34b1d.firebasestorage.app",
   messagingSenderId: "510838318611",
   appId: "1:510838318611:web:39e268e0336a06b463c1e6",
-  measurementId: "G-0EE3D187E0"
+  measurementId: "G-0EE3D187E0",
 };
 
+// Khởi tạo app
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+
+// Firestore
 const db = getFirestore(app);
 
-export { db };
+// Auth
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+export { db, auth, googleProvider };
