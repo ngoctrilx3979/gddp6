@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { auth, googleProvider } from "@/lib/firebase";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -8,35 +9,64 @@ import {
 } from "firebase/auth";
 import { FcGoogle } from "react-icons/fc";
 
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, googleProvider, db } from "@/lib/firebase";
+
+// Hàm lưu user
+const saveUserToFirestore = async (user: any) => {
+  const userRef = doc(db, "users", user.uid);
+  await setDoc(
+    userRef,
+    {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName || "",
+      photoURL: user.photoURL || "",
+      providerId: user.providerData[0]?.providerId || "password",
+      createdAt: serverTimestamp(),
+    },
+    { merge: true } // merge để không ghi đè khi user login lại
+  );
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
+const router = useRouter();
+const handleGoogleLogin = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    await saveUserToFirestore(user);
 
-  // Đăng nhập bằng Google
-  const handleGoogleLogin = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      alert("✅ Đăng nhập Google thành công!");
-    } catch (error: any) {
-      alert("❌ " + error.message);
-    }
-  };
+    toast.success("✅ Đăng nhập Google thành công!");
+    router.push("/");
+  } catch (error: any) {
+    toast.error("❌ " + error.message);
+  }
+};
 
-  // Đăng nhập / Đăng ký bằng Email & Password
-  const handleEmailPassword = async () => {
-    try {
-      if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert("✅ Đăng ký thành công!");
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("✅ Đăng nhập thành công!");
-      }
-    } catch (error: any) {
-      alert("❌ " + error.message);
+const handleEmailPassword = async () => {
+  try {
+    if (isRegister) {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+      await saveUserToFirestore(user);
+
+      toast.success("✅ Đăng ký thành công!");
+    } else {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+      await saveUserToFirestore(user);
+
+      toast.success("✅ Đăng nhập thành công!");
     }
-  };
+    router.push("/");
+  } catch (error: any) {
+    toast.error("❌ " + error.message);
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-100">
@@ -76,6 +106,7 @@ export default function LoginPage() {
           className="text-sm text-center mt-4 text-blue-500 cursor-pointer"
           onClick={() => setIsRegister(!isRegister)}
         >
+
           {isRegister ? "Đã có tài khoản? Đăng nhập" : "Chưa có tài khoản? Đăng ký"}
         </p>
 

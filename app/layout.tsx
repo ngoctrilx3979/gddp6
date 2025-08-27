@@ -4,7 +4,11 @@ import "./globals.css";
 import Link from 'next/link'
 import AOS from "aos";
 import "aos/dist/aos.css";
-
+import Header from "./components/Header";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "aos/dist/aos.css";
+import "./globals.css";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -16,24 +20,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body>
-        <header style={{
-          padding: '1rem',
-          backgroundColor: '#333',    // nền tối
-        }}>
-          <nav style={{
-            display: 'flex',
-            gap: '1.5rem',
-          }}>
-            <Link href="/" style={{ color: 'white', textDecoration: 'none' }}>Trang chủ</Link>
-            <Link href="/gioi-thieu" style={{ color: 'white', textDecoration: 'none' }}>Giới thiệu</Link>
-            <Link href="/lien-he" style={{ color: 'white', textDecoration: 'none' }}>Liên hệ</Link>
-            <Link href="/danh-muc" style={{ color: 'white', textDecoration: 'none' }}>Danh mục</Link>
-            <Link href="/bai-viet" style={{ color: 'white', textDecoration: 'none' }}>Bài viết</Link>
-            <Link href="/chu-de" style={{ color: 'white', textDecoration: 'none' }}>Chủ đề</Link>
-            <Link href="/bai-hoc" style={{ color: 'white', textDecoration: 'none' }}>Bài Học</Link>
-            <Link href="/dang-nhap" style={{ color: 'white', textDecoration: 'none' }}>Đăng Nhập</Link>
-          </nav>
-        </header>
+        <Header/>
         <main style={{
           padding: '2rem',
           backgroundColor: '#FFB3BA',
@@ -45,6 +32,17 @@ export default function RootLayout({
         }}
           >
           {children}
+          {/* Toastify Container */}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000} // tự động đóng sau 3s
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored" // "light" | "dark" | "colored"
+        />
         </main>
       </body>
     </html>
