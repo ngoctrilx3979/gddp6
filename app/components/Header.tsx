@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { auth } from "@/lib/firebase";
+import { auth } from "../../lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { FaUserCircle } from "react-icons/fa";
 
@@ -24,11 +24,12 @@ export default function Header() {
   return (
     <header
       style={{
-        padding: "1rem",
-        backgroundColor: "#333",
+        padding: "1rem 2rem",
+        backgroundColor: "var(--color-primary)", // Xanh dương chủ đạo
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        color: "white",
       }}
     >
       {/* Menu điều hướng */}
@@ -48,7 +49,13 @@ export default function Header() {
           <>
             <div
               onClick={() => setMenuOpen(!menuOpen)}
-              style={{ cursor: "pointer", color: "white", display: "flex", alignItems: "center", gap: "8px" }}
+              style={{
+                cursor: "pointer",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
             >
               {user.photoURL ? (
                 <img
@@ -89,7 +96,8 @@ export default function Header() {
                     background: "none",
                     border: "none",
                     cursor: "pointer",
-                    color: "red",
+                    color: "var(--color-accent)", // Cam
+                    fontWeight: "bold",
                   }}
                 >
                   Đăng xuất
