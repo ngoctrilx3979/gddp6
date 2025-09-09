@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getLatestLessons } from "@/lib/lessonService";
 import Image from "next/image";
-
+import Link from "next/link";
 export default function LatestLessons() {
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,9 +59,11 @@ export default function LatestLessons() {
                   </div>
                   {/* Nội dung */}
                   <div>
-                    <h3 className="font-semibold text-lg text-gray-800">
-                      {lesson.title}
-                    </h3>
+                   <h3 className="font-semibold text-lg text-gray-800">
+                        <Link href={`/bai-hoc/${lesson.id}`}>
+                          {lesson.title}
+                        </Link>
+                      </h3>
                     <p className="text-sm text-gray-600">
                       {lesson.description}
                     </p>
