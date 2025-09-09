@@ -1,14 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
 import { getTopics } from '@/lib/topicService';
 import { addlesson, getLessons } from '@/lib/lessonService';
 
-
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 export default function BaiHocPage() {
   const [title, setTitle] = useState('');

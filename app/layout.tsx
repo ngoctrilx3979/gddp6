@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 import "./globals.css";
-import Link from "next/link";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Header from "./components/Header";

@@ -3,12 +3,9 @@
 import { useEffect, useState } from 'react';
 import { getCategories } from '@/lib/categoryService';
 import { addPost, getPosts } from '@/lib/postService';
-import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
 
 
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 export default function BaiVietPage() {
   const [title, setTitle] = useState('');
