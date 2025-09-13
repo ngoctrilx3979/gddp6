@@ -8,48 +8,39 @@ import {
   orderBy,
   serverTimestamp,
   limit,
+  startAfter,
+  doc,
   deleteDoc,
   updateDoc,
-  doc,
-  getDoc,
 } from 'firebase/firestore';
 
 const postsCollection = collection(db, 'posts');
 
-
-
-export async function getLatestPosts(limitNumber: number = 5) {
-  const q = query(postsCollection, orderBy("createdAt", "desc"), limit(limitNumber));
+export async function getPosts(pageSize = 5, lastDoc: any = null) {
+  let q = query(postsCollection, orderBy('createdAt', 'desc'), limit(pageSize));
+  if (lastDoc) {
+    q = query(postsCollection, orderBy('createdAt', 'desc'), startAfter(lastDoc), limit(pageSize));
+  }
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return {
+    data: snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+    lastDoc: snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : null,
+  };
 }
 
-export const addPost = async (
-  title: string,
-  categoryId: string,
-  description: string
-) => {
-  return await addDoc(postsCollection, {
+export async function addPost(title: string, categoryId: string, description: string) {
+  await addDoc(postsCollection, {
     title,
     categoryId,
     description,
     createdAt: serverTimestamp(),
   });
-};
-
-export const getPosts = async () => {
-  const q = query(postsCollection, orderBy('createdAt', 'desc'));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-};
-// Cập nhật
-export async function updatePost(id: string, data: any) {
-  const ref = doc(db, 'posts', id);
-  await updateDoc(ref, data);
 }
 
-// Xóa
+export async function updatePost(id: string, data: any) {
+  await updateDoc(doc(db, 'posts', id), data);
+}
+
 export async function deletePost(id: string) {
-  const ref = doc(db, 'posts', id);
-  await deleteDoc(ref);
+  await deleteDoc(doc(db, 'posts', id));
 }

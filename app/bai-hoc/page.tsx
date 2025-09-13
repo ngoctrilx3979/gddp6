@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 
 import { getTopics } from '@/lib/topicService';
-import { addlesson, getLessons, deleteLesson, updateLesson } from '@/lib/lessonService';
+import { addLesson, getLessons, updateLesson, deleteLesson } from '@/lib/lessonService';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
@@ -15,16 +15,27 @@ export default function BaiHocPage() {
   const [description, setDescription] = useState('');
   const [topics, setTopics] = useState<any[]>([]);
   const [lessons, setLessons] = useState<any[]>([]);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const fetchData = async () => {
-    const [topicList, lessonList] = await Promise.all([getTopics(), getLessons()]);
-    setTopics(topicList);
-    setLessons(lessonList);
+  // pagination state
+  const [lastDoc, setLastDoc] = useState<any>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 5;
+
+  const fetchData = async (reset = false) => {
+    const { data, lastDoc: newLastDoc } = await getLessons(PAGE_SIZE, reset ? null : lastDoc);
+    if (reset) {
+      setLessons(data);
+    } else {
+      setLessons((prev) => [...prev, ...data]);
+    }
+    setLastDoc(newLastDoc);
+    setHasMore(data.length === PAGE_SIZE);
   };
 
   useEffect(() => {
-    fetchData();
+    getTopics().then(setTopics);
+    fetchData(true);
   }, []);
 
   const handleSubmit = async () => {
@@ -32,38 +43,40 @@ export default function BaiHocPage() {
       return alert('Vui lòng điền đầy đủ thông tin');
     }
 
-    if (editId) {
-      await updateLesson(editId, { title, categoryId: topicId, description });
-      setEditId(null);
+    if (editingId) {
+      await updateLesson(editingId, { title, topicId, description });
+      setEditingId(null);
     } else {
-      await addlesson(title, topicId, description);
+      await addLesson(title, topicId, description);
     }
 
     setTitle('');
     setTopicId('');
     setDescription('');
-    fetchData();
+    fetchData(true);
   };
 
   const handleEdit = (lesson: any) => {
-    setEditId(lesson.id);
     setTitle(lesson.title);
-    setTopicId(lesson.categoryId);
+    setTopicId(lesson.topicId);
     setDescription(lesson.description);
+    setEditingId(lesson.id);
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Bạn có chắc muốn xóa bài học này không?')) {
+    if (confirm('Bạn có chắc muốn xóa bài học này?')) {
       await deleteLesson(id);
-      fetchData();
+      fetchData(true);
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto p-8">
-      <h1 className="text-3xl font-bold text-blue-700 mb-6">Thêm Bài học</h1>
+      <h1 className="text-3xl font-bold text-blue-700 mb-6">
+        {editingId ? 'Sửa Bài Học' : 'Thêm Bài Học'}
+      </h1>
 
-      {/* Form thêm/sửa bài học */}
+      {/* Form */}
       <div className="bg-white p-6 rounded-lg shadow space-y-4 mb-8">
         <input
           type="text"
@@ -98,30 +111,41 @@ export default function BaiHocPage() {
           onClick={handleSubmit}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          {editId ? 'Cập nhật bài học' : 'Lưu bài học'}
+          {editingId ? 'Cập nhật' : 'Lưu bài học'}
         </button>
+        {editingId && (
+          <button
+            onClick={() => {
+              setEditingId(null);
+              setTitle('');
+              setTopicId('');
+              setDescription('');
+            }}
+            className="ml-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+          >
+            Hủy
+          </button>
+        )}
       </div>
 
-      {/* Danh sách bài học */}
+      {/* Danh sách */}
       <h2 className="text-xl font-semibold mb-2">Danh sách bài học</h2>
       <ul className="space-y-2">
         {lessons.map((lesson) => (
-          <li key={lesson.id} className="bg-gray-100 p-4 rounded">
-            <h3 className="font-bold">{lesson.title}</h3>
-            <p className="text-sm text-gray-600">
-              {lesson.createdAt?.seconds
-                ? new Date(lesson.createdAt.seconds * 1000).toLocaleString()
-                : '---'}{' '}
-              | Chủ đề:{' '}
-              {topics.find((c) => c.id === lesson.categoryId)?.name || '---'}
-            </p>
-            <div
-              className="prose prose-sm max-w-none mt-2"
-              dangerouslySetInnerHTML={{ __html: lesson.description }}
-            />
-
-            {/* Nút sửa / xóa */}
-            <div className="flex gap-2 mt-3">
+          <li
+            key={lesson.id}
+            className="bg-gray-100 p-4 rounded flex justify-between items-center"
+          >
+            <div>
+              <h3 className="font-bold">{lesson.title}</h3>
+              <p className="text-sm text-gray-600">
+                {lesson.createdAt?.seconds
+                  ? new Date(lesson.createdAt.seconds * 1000).toLocaleString()
+                  : '---'}{' '}
+                | Chủ đề: {topics.find((c) => c.id === lesson.topicId)?.name || '---'}
+              </p>
+            </div>
+            <div className="space-x-2">
               <button
                 onClick={() => handleEdit(lesson)}
                 className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
@@ -130,7 +154,7 @@ export default function BaiHocPage() {
               </button>
               <button
                 onClick={() => handleDelete(lesson.id)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
               >
                 Xóa
               </button>
@@ -138,6 +162,17 @@ export default function BaiHocPage() {
           </li>
         ))}
       </ul>
+
+      {hasMore && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => fetchData(false)}
+            className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+          >
+            Tải thêm
+          </button>
+        </div>
+      )}
     </div>
   );
 }
