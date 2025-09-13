@@ -1,9 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getTopics } from '@/lib/topicService';
-import { addlesson, getLessons } from '@/lib/lessonService';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
 
+import { getTopics } from '@/lib/topicService';
+import { addlesson, getLessons, deleteLesson, updateLesson } from '@/lib/lessonService';
+
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function BaiHocPage() {
   const [title, setTitle] = useState('');
@@ -11,6 +15,7 @@ export default function BaiHocPage() {
   const [description, setDescription] = useState('');
   const [topics, setTopics] = useState<any[]>([]);
   const [lessons, setLessons] = useState<any[]>([]);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const fetchData = async () => {
     const [topicList, lessonList] = await Promise.all([getTopics(), getLessons()]);
@@ -26,18 +31,39 @@ export default function BaiHocPage() {
     if (!title || !topicId || !description) {
       return alert('Vui lòng điền đầy đủ thông tin');
     }
-    await addlesson(title, topicId, description);
+
+    if (editId) {
+      await updateLesson(editId, { title, categoryId: topicId, description });
+      setEditId(null);
+    } else {
+      await addlesson(title, topicId, description);
+    }
+
     setTitle('');
     setTopicId('');
     setDescription('');
     fetchData();
   };
 
+  const handleEdit = (lesson: any) => {
+    setEditId(lesson.id);
+    setTitle(lesson.title);
+    setTopicId(lesson.categoryId);
+    setDescription(lesson.description);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Bạn có chắc muốn xóa bài học này không?')) {
+      await deleteLesson(id);
+      fetchData();
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto p-8">
       <h1 className="text-3xl font-bold text-blue-700 mb-6">Thêm Bài học</h1>
 
-      {/* Form thêm bài học */}
+      {/* Form thêm/sửa bài học */}
       <div className="bg-white p-6 rounded-lg shadow space-y-4 mb-8">
         <input
           type="text"
@@ -52,7 +78,7 @@ export default function BaiHocPage() {
           onChange={(e) => setTopicId(e.target.value)}
           className="border p-3 w-full rounded"
         >
-          <option value="">-- Chọn bài học </option>
+          <option value="">-- Chọn chủ đề --</option>
           {topics.map((topic) => (
             <option key={topic.id} value={topic.id}>
               {topic.name}
@@ -60,17 +86,20 @@ export default function BaiHocPage() {
           ))}
         </select>
 
-        <textarea
+        <ReactQuill
+          theme="snow"
           value={description}
-           onChange={(e) => setDescription(e.target.value)}
+          onChange={setDescription}
           placeholder="Nhập nội dung bài học..."
+          className="bg-white"
         />
 
         <button
           onClick={handleSubmit}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Lưu bài học </button>
+          {editId ? 'Cập nhật bài học' : 'Lưu bài học'}
+        </button>
       </div>
 
       {/* Danh sách bài học */}
@@ -80,10 +109,32 @@ export default function BaiHocPage() {
           <li key={lesson.id} className="bg-gray-100 p-4 rounded">
             <h3 className="font-bold">{lesson.title}</h3>
             <p className="text-sm text-gray-600">
-              {new Date(lesson.createdAt?.seconds * 1000).toLocaleString()} | Bài học: {
-                topics.find((c) => c.id === lesson.categoryId)?.name || '---'
-              }
+              {lesson.createdAt?.seconds
+                ? new Date(lesson.createdAt.seconds * 1000).toLocaleString()
+                : '---'}{' '}
+              | Chủ đề:{' '}
+              {topics.find((c) => c.id === lesson.categoryId)?.name || '---'}
             </p>
+            <div
+              className="prose prose-sm max-w-none mt-2"
+              dangerouslySetInnerHTML={{ __html: lesson.description }}
+            />
+
+            {/* Nút sửa / xóa */}
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => handleEdit(lesson)}
+                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+              >
+                Sửa
+              </button>
+              <button
+                onClick={() => handleDelete(lesson.id)}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              >
+                Xóa
+              </button>
+            </div>
           </li>
         ))}
       </ul>

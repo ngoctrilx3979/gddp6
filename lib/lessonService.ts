@@ -8,8 +8,11 @@ import {
   orderBy,
   serverTimestamp,
   limit,
+  deleteDoc,
+  updateDoc,
+  doc,
+  getDoc,
 } from 'firebase/firestore';
-import { doc, getDoc } from "firebase/firestore";
 
 const lessonsCollection = collection(db, 'lessons');
 
@@ -56,3 +59,15 @@ export const getLessons = async () => {
   const snapshot = await getDocs(q);
   return snapshot.docs.map((lesson) => ({ id: lesson.id, ...lesson.data() }));
 };
+
+// Cập nhật
+export async function updateLesson(id: string, data: any) {
+  const ref = doc(db, 'lessons', id);
+  await updateDoc(ref, data);
+}
+
+// Xóa
+export async function deleteLesson(id: string) {
+  const ref = doc(db, 'lessons', id);
+  await deleteDoc(ref);
+}
