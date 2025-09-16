@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getLatestPosts } from "@/lib/postService";
 import Image from "next/image";
+import Link from "next/link"; // ✅ sửa lại
 
 export default function LatestPosts() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -24,7 +25,8 @@ export default function LatestPosts() {
           Khám phá những chia sẻ mới
         </h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Cập nhật tin tức, tài liệu và kiến thức học tập giúp bạn học tập hiệu quả hơn mỗi ngày.
+          Cập nhật tin tức, tài liệu và kiến thức học tập giúp bạn học tập hiệu
+          quả hơn mỗi ngày.
         </p>
       </div>
 
@@ -47,6 +49,7 @@ export default function LatestPosts() {
                   src={post.imageUrl || "/images/default-post.jpg"}
                   alt={post.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover group-hover:scale-105 transition"
                 />
               </div>
@@ -54,15 +57,17 @@ export default function LatestPosts() {
               {/* Overlay nội dung */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-left">
                 <h3 className="text-lg font-semibold text-white">
-                  {post.title}
+                  <Link href={`/bai-viet/${post.id}`}>
+                    {post.title}
+                  </Link>
                 </h3>
                 <p className="text-sm text-gray-200 line-clamp-2">
                   {post.description}
                 </p>
                 <span className="text-xs text-gray-300 block mt-1">
-                  {new Date(post.createdAt?.seconds * 1000).toLocaleDateString(
-                    "vi-VN"
-                  )}
+                  {post.createdAt?.seconds
+                    ? new Date(post.createdAt.seconds * 1000).toLocaleDateString("vi-VN")
+                    : "Chưa có ngày"}
                 </span>
               </div>
             </div>

@@ -5,7 +5,12 @@ import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 
 import { getCategories } from '@/lib/categoryService';
-import { addPost, getPosts, updatePost, deletePost } from '@/lib/postService';
+import {
+  addPost,
+  getPosts,
+  updatePost,
+  deletePost,
+} from '@/lib/postService';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
@@ -23,12 +28,17 @@ export default function BaiVietPage() {
   const PAGE_SIZE = 5;
 
   const fetchData = async (reset = false) => {
-    const { data, lastDoc: newLastDoc } = await getPosts(PAGE_SIZE, reset ? null : lastDoc);
+    const { data, lastDoc: newLastDoc } = await getPosts(
+      PAGE_SIZE,
+      reset ? null : lastDoc
+    );
+
     if (reset) {
       setPosts(data);
     } else {
       setPosts((prev) => [...prev, ...data]);
     }
+
     setLastDoc(newLastDoc);
     setHasMore(data.length === PAGE_SIZE);
   };
@@ -71,7 +81,7 @@ export default function BaiVietPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
+    <div className="max-w-6xl mx-auto p-8">
       <h1 className="text-3xl font-bold text-blue-700 mb-6">
         {editingId ? 'Sửa Bài Viết' : 'Thêm Bài Viết'}
       </h1>
@@ -107,25 +117,27 @@ export default function BaiVietPage() {
           className="bg-white"
         />
 
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {editingId ? 'Cập nhật' : 'Lưu bài viết'}
-        </button>
-        {editingId && (
+        <div>
           <button
-            onClick={() => {
-              setEditingId(null);
-              setTitle('');
-              setCategoryId('');
-              setDescription('');
-            }}
-            className="ml-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+            onClick={handleSubmit}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Hủy
+            {editingId ? 'Cập nhật' : 'Lưu bài viết'}
           </button>
-        )}
+          {editingId && (
+            <button
+              onClick={() => {
+                setEditingId(null);
+                setTitle('');
+                setCategoryId('');
+                setDescription('');
+              }}
+              className="ml-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+            >
+              Hủy
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Danh sách */}
@@ -140,9 +152,13 @@ export default function BaiVietPage() {
               <h3 className="font-bold">{post.title}</h3>
               <p className="text-sm text-gray-600">
                 {post.createdAt?.seconds
-                  ? new Date(post.createdAt.seconds * 1000).toLocaleString()
+                  ? new Date(post.createdAt.seconds * 1000).toLocaleString(
+                      'vi-VN'
+                    )
                   : '---'}{' '}
-                | Danh mục: {categories.find((c) => c.id === post.categoryId)?.name || '---'}
+                | Danh mục:{' '}
+                {categories.find((c) => c.id === post.categoryId)?.name ||
+                  '---'}
               </p>
             </div>
             <div className="space-x-2">

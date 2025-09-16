@@ -12,16 +12,15 @@ import {
   doc,
   deleteDoc,
   updateDoc,
+  getDoc,
 } from 'firebase/firestore';
 
 const postsCollection = collection(db, 'posts');
-
 
 export async function getLatestPosts(limitNumber: number = 5) {
   const q = query(postsCollection, orderBy("createdAt", "desc"), limit(limitNumber));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  
 }
 
 export async function getPosts(pageSize = 5, lastDoc: any = null) {
@@ -51,4 +50,12 @@ export async function updatePost(id: string, data: any) {
 
 export async function deletePost(id: string) {
   await deleteDoc(doc(db, 'posts', id));
+}
+
+// 🆕 Lấy 1 bài viết theo id
+export async function getPostById(id: string) {
+  const ref = doc(db, 'posts', id);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() };
 }
