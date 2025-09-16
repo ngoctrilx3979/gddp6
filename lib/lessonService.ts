@@ -12,10 +12,35 @@ import {
   doc,
   deleteDoc,
   updateDoc,
+  getDoc,
 } from 'firebase/firestore';
 
 const lessonsCollection = collection(db, 'lessons');
 
+export async function getLessonById(id: string) {
+  try {
+    const ref = doc(db, "lessons", id);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      return null;
+    }
+
+    return {
+      id: snap.id,
+      ...snap.data(),
+    };
+  } catch (error) {
+    console.error("Lỗi khi lấy bài học:", error);
+    return null;
+  }
+}
+
+export async function getLatestLessons(limitNumber: number = 5) {
+  const q = query(lessonsCollection, orderBy("createdAt", "desc"), limit(limitNumber));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
 export async function getLessons(pageSize = 5, lastDoc: any = null) {
   let q = query(lessonsCollection, orderBy('createdAt', 'desc'), limit(pageSize));
   if (lastDoc) {

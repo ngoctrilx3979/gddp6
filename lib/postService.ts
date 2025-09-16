@@ -16,6 +16,14 @@ import {
 
 const postsCollection = collection(db, 'posts');
 
+
+export async function getLatestPosts(limitNumber: number = 5) {
+  const q = query(postsCollection, orderBy("createdAt", "desc"), limit(limitNumber));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  
+}
+
 export async function getPosts(pageSize = 5, lastDoc: any = null) {
   let q = query(postsCollection, orderBy('createdAt', 'desc'), limit(pageSize));
   if (lastDoc) {
