@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getLatestPosts } from "@/lib/postService";
 import Image from "next/image";
-import Link from "next/link"; // ✅ sửa lại
+import Link from "next/link"; // ✅
 
 export default function LatestPosts() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -14,6 +14,17 @@ export default function LatestPosts() {
       setLoading(false);
     });
   }, []);
+
+  // Helper: loại bỏ HTML + cắt còn 30 từ
+  function htmlToPlainText(html: string | undefined | null, maxWords = 30) {
+    if (!html) return "";
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const text = div.textContent || div.innerText || "";
+    const words = text.trim().replace(/\s+/g, " ").split(" ");
+    if (words.length <= maxWords) return words.join(" ");
+    return words.slice(0, maxWords).join(" ") + "...";
+  }
 
   return (
     <section className="py-16 bg-white rounded-lg">
@@ -57,12 +68,10 @@ export default function LatestPosts() {
               {/* Overlay nội dung */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-left">
                 <h3 className="text-lg font-semibold text-white">
-                  <Link href={`/bai-viet/${post.id}`}>
-                    {post.title}
-                  </Link>
+                  <Link href={`/bai-viet/${post.id}`}>{post.title}</Link>
                 </h3>
                 <p className="text-sm text-gray-200 line-clamp-2">
-                  {post.description}
+                  {htmlToPlainText(post.description, 30)}
                 </p>
                 <span className="text-xs text-gray-300 block mt-1">
                   {post.createdAt?.seconds

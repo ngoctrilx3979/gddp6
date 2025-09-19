@@ -3,10 +3,32 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
-
 import { getTopics } from '@/lib/topicService';
 import { addLesson, getLessons, updateLesson, deleteLesson } from '@/lib/lessonService';
 
+
+
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline", "strike"], // chữ đậm, nghiêng, gạch chân
+    [{ color: [] }, { background: [] }],       // màu chữ, màu nền
+    [{ align: [] }],                           // canh lề
+    [{ list: "ordered" }, { list: "bullet" }], // danh sách
+    ["link", "image"],                         // chèn link, ảnh
+    ["clean"],
+  ],
+  
+};
+
+const formats = [
+  "header",
+  "bold", "italic", "underline", "strike",
+  "color", "background",
+  "align",
+  "list", "bullet",
+  "link", "image",
+];
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function BaiHocPage() {
@@ -105,6 +127,9 @@ export default function BaiHocPage() {
           onChange={setDescription}
           placeholder="Nhập nội dung bài học..."
           className="bg-white"
+          modules={modules}   // 👈 thêm vào
+          formats={formats}   // 👈 thêm vào
+         
         />
 
         <button

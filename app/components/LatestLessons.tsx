@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getLatestLessons } from "@/lib/lessonService";
 import Image from "next/image";
 import Link from "next/link";
+
 export default function LatestLessons() {
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,20 @@ export default function LatestLessons() {
       setLoading(false);
     });
   }, []);
+
+  // Helper: loại bỏ HTML, decode HTML entities và lấy tối đa `maxWords` từ text
+  function htmlToPlainText(html: string | undefined | null, maxWords = 30) {
+    if (!html) return "";
+    // tạo element tạm để decode entities & strip tags
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const text = div.textContent || div.innerText || "";
+
+    // normalize whitespace and split into words
+    const words = text.trim().replace(/\s+/g, " ").split(" ");
+    if (words.length <= maxWords) return words.join(" ");
+    return words.slice(0, maxWords).join(" ") + "...";
+  }
 
   return (
     <section className="py-16 bg-gray-50 rounded-lg">
@@ -59,18 +74,20 @@ export default function LatestLessons() {
                   </div>
                   {/* Nội dung */}
                   <div>
-                   <h3 className="font-semibold text-lg text-gray-800">
-                        <Link href={`/bai-hoc/${lesson.id}`}>
-                          {lesson.title}
-                        </Link>
-                      </h3>
+                    <h3 className="font-semibold text-lg text-gray-800">
+                      <Link href={`/bai-hoc/${lesson.id}`}>{lesson.title}</Link>
+                    </h3>
                     <p className="text-sm text-gray-600">
-                      {lesson.description}
+                      {htmlToPlainText(lesson.description, 30)}
                     </p>
                     <span className="text-xs text-gray-400 block mt-1">
-                      {new Date(
-                        lesson.createdAt?.seconds * 1000
-                      ).toLocaleDateString("vi-VN")}
+                      {lesson.createdAt?.seconds
+                        ? new Date(lesson.createdAt.seconds * 1000).toLocaleDateString(
+                            "vi-VN"
+                          )
+                        : lesson.createdAt
+                        ? new Date(lesson.createdAt).toLocaleDateString("vi-VN")
+                        : ""}
                     </span>
                   </div>
                 </div>

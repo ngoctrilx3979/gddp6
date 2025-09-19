@@ -9,7 +9,8 @@ interface LessonDetailPageProps {
 }
 
 export default async function BaiHocDetailPage({ params }: LessonDetailPageProps) {
-  const lesson = await getLessonById(params.id);
+  const { id } = await params; // 👈 chờ params
+  const lesson = await getLessonById(id);
 
   if (!lesson) return notFound();
 
@@ -18,7 +19,6 @@ export default async function BaiHocDetailPage({ params }: LessonDetailPageProps
       {/* Bên trái: Nội dung bài học */}
       <div className="md:col-span-2 bg-white p-6 rounded-xl shadow">
         <h1 className="text-3xl font-bold mb-4">{lesson.title}</h1>
-        <p className="text-gray-600 mb-6">{lesson.description}</p>
         <span className="text-sm text-gray-400 block mb-8">
           Ngày tạo:{" "}
           {lesson.createdAt?.seconds
@@ -29,14 +29,14 @@ export default async function BaiHocDetailPage({ params }: LessonDetailPageProps
         <article
           className="prose max-w-none"
           dangerouslySetInnerHTML={{
-            __html: lesson.content || "<p>Chưa có nội dung chi tiết.</p>",
+            __html: lesson.description || "<p>Chưa có nội dung chi tiết.</p>",
           }}
         />
       </div>
 
       {/* Bên phải: Feedback */}
       <div className="bg-gray-50 p-6 rounded-xl shadow h-fit">
-        <FeedbackSection lessonId={params.id} />
+        <FeedbackSection lessonId={id} />
       </div>
     </div>
   );
