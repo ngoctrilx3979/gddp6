@@ -14,6 +14,7 @@ import {
   doc,
   deleteDoc,
 } from "firebase/firestore";
+import { Feedback } from "@/types/feedback";
 
 export default function FeedbackSection({ lessonId }: { lessonId: string }) {
   const [user, setUser] = useState<any>(null);
@@ -31,8 +32,10 @@ export default function FeedbackSection({ lessonId }: { lessonId: string }) {
   useEffect(() => {
     const q = query(collection(db, "feedbacks"), where("lessonId", "==", lessonId));
     const unsub = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setFeedbacks(data.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds));
+       const data = snap.docs.map(
+        (d) => ({ id: d.id, ...d.data() } as Feedback) // 👈 ép kiểu
+      );
+      setFeedbacks(data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
     });
     return () => unsub();
   }, [lessonId]);

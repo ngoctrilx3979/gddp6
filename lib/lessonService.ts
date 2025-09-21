@@ -1,4 +1,5 @@
 // lib/lessonService.ts
+import { Lesson } from '@/types/lesson';
 import { db } from './firebase';
 import {
   collection,
@@ -17,23 +18,20 @@ import {
 
 const lessonsCollection = collection(db, 'lessons');
 
-export async function getLessonById(id: string) {
-  try {
-    const ref = doc(db, "lessons", id);
-    const snap = await getDoc(ref);
+export async function getLessonById(id: string): Promise<Lesson | null> {
+  const ref = doc(db, "lessons", id);
+  const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-      return null;
-    }
+  if (!snap.exists()) return null;
 
-    return {
-      id: snap.id,
-      ...snap.data(),
-    };
-  } catch (error) {
-    console.error("Lỗi khi lấy bài học:", error);
-    return null;
-  }
+  const data = snap.data();
+
+  return {
+    id: snap.id,
+    title: data.title || "",
+    description: data.description || "",
+    createdAt: data.createdAt,
+  };
 }
 
 export async function getLatestLessons(limitNumber: number = 5) {

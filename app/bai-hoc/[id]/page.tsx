@@ -1,15 +1,13 @@
 import { getLessonById } from "@/lib/lessonService";
 import { notFound } from "next/navigation";
-import FeedbackSection from "./FeedbackSection";
+import LessonRightPanel from "./LessonRightPanel";
 
 interface LessonDetailPageProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
 }
 
 export default async function BaiHocDetailPage({ params }: LessonDetailPageProps) {
-  const { id } = await params; // 👈 chờ params
+  const { id } = params;
   const lesson = await getLessonById(id);
 
   if (!lesson) return notFound();
@@ -34,10 +32,8 @@ export default async function BaiHocDetailPage({ params }: LessonDetailPageProps
         />
       </div>
 
-      {/* Bên phải: Feedback */}
-      <div className="bg-gray-50 p-6 rounded-xl shadow h-fit">
-        <FeedbackSection lessonId={id} />
-      </div>
+      {/* Bên phải: Tabs bằng CSS */}
+      <LessonRightPanel lessonId={id} lessonContent={lesson.description || ""} />
     </div>
   );
 }
