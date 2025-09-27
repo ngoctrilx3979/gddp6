@@ -7,7 +7,7 @@ interface LessonDetailPageProps {
 }
 
 export default async function BaiHocDetailPage({ params }: LessonDetailPageProps) {
-  const { id } = params;
+  const { id } = await params; // 👈 phải await
   const lesson = await getLessonById(id);
 
   if (!lesson) return notFound();
