@@ -20,8 +20,15 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "typeRoots": ["./types", "./node_modules/@types"]  // 👈 thêm dòng này
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"   // 👈 đảm bảo TS load file trong /types
+  ],
   "exclude": ["node_modules"]
 }
