@@ -4,6 +4,46 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const apiKey = "AIzaSyDSw7Ndia1eY2CNAE7ccadH1m2U7mQuAPQ";
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// 🧹 Hàm tách JSON trong response
+function extractJSON(text: string): string {
+  // Bỏ codeblock
+  let clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
+
+  // Regex tìm JSON object đầu tiên
+  const match = clean.match(/\{[\s\S]*\}/);
+  if (match) {
+    return match[0];
+  }
+  throw new Error("Không tìm thấy JSON trong response: " + text);
+}
+
+// 🔄 Hàm gọi Gemini có retry
+async function callWithRetry(model: any, prompt: string, retries = 3, delay = 30000) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const result = await model.generateContent(prompt);
+      const raw = result.response.text();
+      const jsonStr = extractJSON(raw);
+      return JSON.parse(jsonStr);
+    } catch (err: any) {
+      if (err.message?.includes("429") && attempt < retries - 1) {
+        console.warn(`⚠️ Quota exceeded. Thử lại sau ${delay / 1000}s...`);
+        await new Promise((res) => setTimeout(res, delay));
+      } else if (err instanceof SyntaxError) {
+        console.error("❌ JSON parse error:", err);
+        throw new Error("Gemini trả về dữ liệu không hợp lệ");
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error("Gemini API failed sau nhiều lần retry");
+}
+// =====================
+// 📌 Các hàm export
+// =====================
+
+// 1. Tóm tắt bài học
 export async function generateSummary(inputContent: string, lessonContent: string) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -28,28 +68,45 @@ Cấu trúc JSON:
   "summary": "đoạn tóm tắt súc tích"
 }`;
 
-  const result = await model.generateContent(prompt);
-  let text = result.response.text();
-// 🧹 Làm sạch nếu Gemini trả về có ```json ... ```
-  text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    console.error("Gemini trả về không đúng JSON:", text);
-    throw e;
-  }
+  return await callWithRetry(model, prompt);
 }
 
+// 2. Sinh câu hỏi luyện tập
 export async function generateQuestions(prompt: string) {
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-  const result = await model.generateContent(prompt);
-  let text = result.response.text();
- text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-  // parse JSON từ Gemini
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    console.error("JSON parse error:", e, text);
-    throw new Error("Gemini trả về không phải JSON hợp lệ");
-  }
+  return await callWithRetry(model, prompt);
+}
+
+// 3. Phân tích năng lực học tập
+export async function generateAnalysis(lessons: any[], practices: any[], feedbacks: any[]) {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  // 🔹 Rút gọn dữ liệu trước khi gửi để tránh quota
+  const lessonData = lessons.map((l) => ({ id: l.id, title: l.title }));
+  const practiceData = practices.map((p) => ({
+    lessonId: p.lessonId,
+    score: p.score,
+    total: p.details?.length || 0,
+  }));
+  const feedbackData = feedbacks.map((f) => ({ rating: f.rating, comment: f.comment }));
+
+  const prompt = `
+Hãy phân tích năng lực học tập dựa trên dữ liệu:
+
+1. Danh sách bài học: ${JSON.stringify(lessonData)}
+2. Kết quả luyện tập: ${JSON.stringify(practiceData)}
+3. Các feedback của học viên: ${JSON.stringify(feedbackData)}
+
+Yêu cầu:
+- Đánh giá chi tiết năng lực hiện tại (điểm mạnh, điểm yếu).
+- Đưa ra gợi ý hướng học tập để cải thiện.
+- Trả về JSON với cấu trúc:
+{
+  "overview": "Tổng quan năng lực...",
+  "practiceAnalysis": "Phân tích dựa trên luyện tập...",
+  "feedbackAnalysis": "Phân tích dựa trên phản hồi...",
+  "suggestions": ["Gợi ý 1", "Gợi ý 2", "Gợi ý 3"]
+}`;
+
+  return await callWithRetry(model, prompt);
 }

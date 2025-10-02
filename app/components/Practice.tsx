@@ -103,6 +103,16 @@ export default function Practice({ lessonId, lessonContent }: PracticeProps) {
 
     setScore(count);
     setSubmitted(true);
+      // ❌ Xóa kết quả cũ của user + lesson
+  const oldResults = query(
+    collection(db, "practiceResults"),
+    where("lessonId", "==", lessonId),
+    where("userId", "==", user.uid)
+  );
+  const snapOld = await getDocs(oldResults);
+  for (const d of snapOld.docs) {
+    await deleteDoc(doc(db, "practiceResults", d.id));
+  }
 
     // ✅ Lưu kết quả vào Firestore
     await addDoc(collection(db, "practiceResults"), {

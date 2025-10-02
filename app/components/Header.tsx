@@ -87,6 +87,20 @@ export default function Header() {
                   <p style={{ margin: 0, fontWeight: "bold" }}>{user.displayName || "Người dùng"}</p>
                   <p style={{ margin: 0, fontSize: "0.85rem", color: "#555" }}>{user.email}</p>
                 </div>
+                 {/* 🔹 Thêm menu Phân tích */}
+                <Link
+                  href="/phan-tich"
+                  style={{
+                    display: "block",
+                    padding: "10px",
+                    textDecoration: "none",
+                    color: "#333",
+                    borderBottom: "1px solid #eee",
+                  }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Phân tích
+                </Link>
                 <button
                   onClick={handleLogout}
                   style={{
