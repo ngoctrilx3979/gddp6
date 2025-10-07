@@ -4,6 +4,7 @@ import Link from "next/link";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { FaUserCircle } from "react-icons/fa";
+import AdminMenu from "./AdminMenu"; // 👈 thêm dòng này
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -25,25 +26,24 @@ export default function Header() {
     <header
       style={{
         padding: "1rem 2rem",
-        backgroundColor: "var(--color-primary)", // Xanh dương chủ đạo
+        backgroundColor: "var(--color-primary)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         color: "white",
       }}
     >
-      {/* Menu điều hướng */}
-      <nav style={{ display: "flex", gap: "1.5rem" }}>
+      {/* 🔹 Menu điều hướng chung */}
+      <nav style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
         <Link href="/" style={{ color: "white", textDecoration: "none" }}>Trang chủ</Link>
         <Link href="/gioi-thieu" style={{ color: "white", textDecoration: "none" }}>Giới thiệu</Link>
         <Link href="/lien-he" style={{ color: "white", textDecoration: "none" }}>Liên hệ</Link>
-        <Link href="/danh-muc" style={{ color: "white", textDecoration: "none" }}>Danh mục</Link>
-        <Link href="/bai-viet" style={{ color: "white", textDecoration: "none" }}>Bài viết</Link>
-        <Link href="/chu-de" style={{ color: "white", textDecoration: "none" }}>Chủ đề</Link>
-        <Link href="/bai-hoc" style={{ color: "white", textDecoration: "none" }}>Bài Học</Link>
+
+        {/* 👇 Thêm menu quản trị riêng */}
+        <AdminMenu />
       </nav>
 
-      {/* User menu */}
+      {/* 🔸 User menu */}
       <div style={{ position: "relative" }}>
         {user ? (
           <>
@@ -87,7 +87,6 @@ export default function Header() {
                   <p style={{ margin: 0, fontWeight: "bold" }}>{user.displayName || "Người dùng"}</p>
                   <p style={{ margin: 0, fontSize: "0.85rem", color: "#555" }}>{user.email}</p>
                 </div>
-                 {/* 🔹 Thêm menu Phân tích */}
                 <Link
                   href="/phan-tich"
                   style={{
@@ -110,7 +109,7 @@ export default function Header() {
                     background: "none",
                     border: "none",
                     cursor: "pointer",
-                    color: "var(--color-accent)", // Cam
+                    color: "var(--color-accent)",
                     fontWeight: "bold",
                   }}
                 >
