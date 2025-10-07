@@ -77,7 +77,7 @@ export async function generateQuestions(prompt: string) {
   return await callWithRetry(model, prompt);
 }
 
-// 3. Phân tích năng lực học tập
+// 3. Phân tích năng lực học tập (có thêm dữ liệu chart)
 export async function generateAnalysis(lessons: any[], practices: any[], feedbacks: any[]) {
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -99,14 +99,47 @@ Hãy phân tích năng lực học tập dựa trên dữ liệu:
 
 Yêu cầu:
 - Đánh giá chi tiết năng lực hiện tại (điểm mạnh, điểm yếu).
-- Đưa ra gợi ý hướng học tập để cải thiện.
-- Trả về JSON với cấu trúc:
+- Phân tích dựa trên kết quả luyện tập và phản hồi.
+- Đưa ra gợi ý hướng học tập cụ thể để cải thiện.
+- Tạo dữ liệu biểu đồ (chart data) có thể trực quan hóa được.
+
+Trả về JSON với cấu trúc sau:
 {
   "overview": "Tổng quan năng lực...",
   "practiceAnalysis": "Phân tích dựa trên luyện tập...",
   "feedbackAnalysis": "Phân tích dựa trên phản hồi...",
-  "suggestions": ["Gợi ý 1", "Gợi ý 2", "Gợi ý 3"]
-}`;
+  "suggestions": ["Gợi ý 1", "Gợi ý 2", "Gợi ý 3"],
+  "charts": {
+    "practiceChart": {
+      "title": "Điểm trung bình theo bài học",
+      "type": "bar",
+      "data": [
+        { "lessonTitle": "Bài 1", "averageScore": 8.5 },
+        { "lessonTitle": "Bài 2", "averageScore": 7.0 }
+      ]
+    },
+    "feedbackChart": {
+      "title": "Phân bố đánh giá của học viên",
+      "type": "pie",
+      "data": [
+        { "rating": 5, "count": 10 },
+        { "rating": 4, "count": 4 },
+        { "rating": 3, "count": 2 }
+      ]
+    },
+    "progressChart": {
+      "title": "Xu hướng điểm luyện tập theo thời gian",
+      "type": "line",
+      "data": [
+        { "date": "2025-09-01", "averageScore": 7.2 },
+        { "date": "2025-09-10", "averageScore": 8.0 },
+        { "date": "2025-09-20", "averageScore": 8.8 }
+      ]
+    }
+  }
+}
+- Chỉ trả về JSON hợp lệ, không giải thích thêm.
+`;
 
   return await callWithRetry(model, prompt);
 }

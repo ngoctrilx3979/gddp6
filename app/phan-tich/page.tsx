@@ -4,10 +4,17 @@ import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { generateAnalysis } from "@/lib/geminiService";
+
+// 🧩 Các section hiện có
 import AnalysisOverview from "./sections/AnalysisOverview";
 import PracticeAnalysis from "./sections/PracticeAnalysis";
 import FeedbackAnalysis from "./sections/FeedbackAnalysis";
 import LearningSuggestions from "./sections/LearningSuggestions";
+
+// 🆕 Thêm 3 section biểu đồ
+import PracticeChart from "./sections/PracticeChart";
+import FeedbackChart from "./sections/FeedbackChart";
+import ProgressChart from "./sections/ProgressChart";
 
 export default function PhanTichPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -38,8 +45,8 @@ export default function PhanTichPage() {
       );
       const feedbacks = feedbackSnap.docs.map((d) => d.data());
 
-
-       const result = await generateAnalysis(lessons, practices, feedbacks);
+      // 🔹 Gọi AI phân tích
+      const result = await generateAnalysis(lessons, practices, feedbacks);
       setAnalysis(result);
     };
 
@@ -57,10 +64,32 @@ export default function PhanTichPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-4">Phân tích năng lực học tập</h1>
+
+      {/* 🧠 Phân tích tổng quan */}
       <AnalysisOverview overview={analysis.overview} />
+
+      {/* 📊 Phân tích luyện tập */}
       <PracticeAnalysis practice={analysis.practiceAnalysis} />
+
+      {/* 💬 Phân tích phản hồi */}
       <FeedbackAnalysis feedback={analysis.feedbackAnalysis} />
+
+      {/* 💡 Gợi ý học tập */}
       <LearningSuggestions suggestions={analysis.suggestions} />
+
+      {/* 🆕 KHU VỰC BIỂU ĐỒ TRỰC QUAN */}
+      <div className="pt-8 space-y-6 border-t">
+        <h2 className="text-xl font-semibold mb-4">Thống kê trực quan</h2>
+
+        {/* 🟦 Biểu đồ luyện tập */}
+        <PracticeChart data={analysis.charts?.practiceChart} />
+
+        {/* 🟩 Biểu đồ phản hồi */}
+        <FeedbackChart data={analysis.charts?.feedbackChart} />
+
+        {/* 🟨 Biểu đồ tiến trình */}
+        <ProgressChart data={analysis.charts?.progressChart} />
+      </div>
     </div>
   );
 }
