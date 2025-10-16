@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import {
   addCategory,
@@ -7,21 +6,23 @@ import {
   deleteCategory,
   updateCategory,
 } from '@/lib/categoryService';
+import Loading from '../components/Loading'; // 👈 import component
 
 export default function DanhMucPage() {
   const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true); // 👈 thêm state loading
   const [name, setName] = useState('');
   const [order, setOrder] = useState('');
   const [description, setDescription] = useState('');
-
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState({ name: '', order: '', description: '' });
 
   const fetchData = async () => {
+    setLoading(true);
     const data = await getCategories();
-    // Sắp xếp theo thứ tự tăng dần
     data.sort((a: any, b: any) => a.order - b.order);
     setCategories(data);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -55,6 +56,9 @@ export default function DanhMucPage() {
     fetchData();
   };
 
+  // 👇 Khi đang tải
+  if (loading) return <Loading />;
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-blue-700">Quản lý danh mục</h1>
@@ -76,7 +80,6 @@ export default function DanhMucPage() {
           className="border p-3 rounded"
         />
         <textarea
-          
           placeholder="Diễn giải"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -127,12 +130,11 @@ export default function DanhMucPage() {
                     </td>
                     <td className="p-3">
                       <textarea
-                      
                         value={editData.description}
                         onChange={(e) =>
                           setEditData({ ...editData, description: e.target.value })
                         }
-                       className="border p-1 rounded w-full resize-none h-20"
+                        className="border p-1 rounded w-full resize-none h-20"
                       />
                     </td>
                     <td className="p-3 space-x-2">

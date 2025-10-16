@@ -5,6 +5,8 @@ import { auth } from "../../lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { FaUserCircle } from "react-icons/fa";
 import AdminMenu from "./AdminMenu"; // 👈 thêm dòng này
+import PostMenu from "./PostMenu";
+import LessonMenu from "./LessonMenu";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -37,8 +39,10 @@ export default function Header() {
       <nav style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
         <Link href="/" style={{ color: "white", textDecoration: "none" }}>Trang chủ</Link>
         <Link href="/gioi-thieu" style={{ color: "white", textDecoration: "none" }}>Giới thiệu</Link>
-        <Link href="/lien-he" style={{ color: "white", textDecoration: "none" }}>Liên hệ</Link>
 
+        <PostMenu />
+        <LessonMenu />
+        <Link href="/lien-he" style={{ color: "white", textDecoration: "none" }}>Liên hệ</Link>
         {/* 👇 Thêm menu quản trị riêng */}
         <AdminMenu />
       </nav>

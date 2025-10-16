@@ -14,6 +14,7 @@ import {
   deleteDoc,
   updateDoc,
   getDoc,
+  where,
 } from 'firebase/firestore';
 
 const lessonsCollection = collection(db, 'lessons');
@@ -66,4 +67,27 @@ export async function updateLesson(id: string, data: any) {
 
 export async function deleteLesson(id: string) {
   await deleteDoc(doc(db, 'lessons', id));
+}
+export async function getLessonsByTopic(topicId: string, excludeId?: string): Promise<Lesson[]> {
+  if (!topicId) return [];
+  const q = query(
+    lessonsCollection,
+    where("topicId", "==", topicId),
+    orderBy("createdAt", "desc")
+  );
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs
+    .map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title || "",
+        topicId: data.topicId || "",
+        description: data.description || "",
+        content: data.content || "",
+        createdAt: data.createdAt,
+      } as Lesson;
+    })
+    .filter((lesson) => lesson.id !== excludeId);
 }

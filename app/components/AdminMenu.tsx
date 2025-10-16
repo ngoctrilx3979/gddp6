@@ -77,7 +77,8 @@ export default function AdminMenu() {
             { href: "/danh-muc", label: "Danh mục" },
             { href: "/bai-viet", label: "Bài viết" },
             { href: "/chu-de", label: "Chủ đề" },
-            { href: "/bai-hoc", label: "Bài học" },
+            { href: "/bai-hoc", label: "Bài học" },//
+
           ].map((item) => (
             <Link
               key={item.href}

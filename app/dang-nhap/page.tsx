@@ -8,11 +8,11 @@ import {
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { FcGoogle } from "react-icons/fc";
-
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, googleProvider, db } from "@/lib/firebase";
+import Loading from "../components/Loading"; // 👈 thêm component loading
 
-// Hàm lưu user
+// 🔹 Lưu user vào Firestore
 const saveUserToFirestore = async (user: any) => {
   const userRef = doc(db, "users", user.uid);
   await setDoc(
@@ -25,7 +25,7 @@ const saveUserToFirestore = async (user: any) => {
       providerId: user.providerData[0]?.providerId || "password",
       createdAt: serverTimestamp(),
     },
-    { merge: true } // merge để không ghi đè khi user login lại
+    { merge: true } // tránh ghi đè khi user đăng nhập lại
   );
 };
 
@@ -33,40 +33,47 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
-const router = useRouter();
-const handleGoogleLogin = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    await saveUserToFirestore(user);
+  const [loading, setLoading] = useState(false); // 👈 trạng thái loading
+  const router = useRouter();
 
-    toast.success("✅ Đăng nhập Google thành công!");
-    router.push("/");
-  } catch (error: any) {
-    toast.error("❌ " + error.message);
-  }
-};
-
-const handleEmailPassword = async () => {
-  try {
-    if (isRegister) {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      const user = result.user;
-      await saveUserToFirestore(user);
-
-      toast.success("✅ Đăng ký thành công!");
-    } else {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      const user = result.user;
-      await saveUserToFirestore(user);
-
-      toast.success("✅ Đăng nhập thành công!");
+  // 🔹 Đăng nhập bằng Google
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      await saveUserToFirestore(result.user);
+      toast.success("✅ Đăng nhập Google thành công!");
+      router.push("/");
+    } catch (error: any) {
+      toast.error("❌ " + error.message);
+    } finally {
+      setLoading(false);
     }
-    router.push("/");
-  } catch (error: any) {
-    toast.error("❌ " + error.message);
-  }
-};
+  };
+
+  // 🔹 Đăng nhập / Đăng ký bằng email & password
+  const handleEmailPassword = async () => {
+    try {
+      setLoading(true);
+      if (isRegister) {
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await saveUserToFirestore(result.user);
+        toast.success("✅ Đăng ký thành công!");
+      } else {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        await saveUserToFirestore(result.user);
+        toast.success("✅ Đăng nhập thành công!");
+      }
+      router.push("/");
+    } catch (error: any) {
+      toast.error("❌ " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 Nếu đang loading, hiển thị spinner
+  if (loading) return <Loading />;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-100">
@@ -96,7 +103,12 @@ const handleEmailPassword = async () => {
         {/* Nút Login / Register */}
         <button
           onClick={handleEmailPassword}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          disabled={loading}
+          className={`w-full py-2 rounded-lg text-white font-medium transition ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
           {isRegister ? "Đăng ký" : "Đăng nhập"}
         </button>
@@ -106,18 +118,24 @@ const handleEmailPassword = async () => {
           className="text-sm text-center mt-4 text-blue-500 cursor-pointer"
           onClick={() => setIsRegister(!isRegister)}
         >
-
-          {isRegister ? "Đã có tài khoản? Đăng nhập" : "Chưa có tài khoản? Đăng ký"}
+          {isRegister
+            ? "Đã có tài khoản? Đăng nhập"
+            : "Chưa có tài khoản? Đăng ký"}
         </p>
 
         {/* Google Login */}
         <div className="mt-6">
           <button
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center w-full gap-2 border p-2 rounded-lg hover:bg-gray-100 transition"
+            disabled={loading}
+            className={`flex items-center justify-center w-full gap-2 border p-2 rounded-lg transition ${
+              loading ? "bg-gray-100 cursor-not-allowed" : "hover:bg-gray-100"
+            }`}
           >
             <FcGoogle size={24} />{" "}
-            <span>{isRegister ? "Đăng ký bằng Google" : "Đăng nhập bằng Google"}</span>
+            <span>
+              {isRegister ? "Đăng ký bằng Google" : "Đăng nhập bằng Google"}
+            </span>
           </button>
         </div>
       </div>
