@@ -3,7 +3,7 @@
 :root {
   --color-primary: #1E40AF; /* Xanh dương đậm */
   --color-accent: #F97316;  /* Cam */
-  --color-bg: #FFFFFF;      /* Trắng */
+  --color-bg: #dcdcdc;      /* Trắng */
   --color-text: #1F2937;    /* Xám đậm */
   --color-muted: #6B7280;   /* Xám nhạt */
 }
