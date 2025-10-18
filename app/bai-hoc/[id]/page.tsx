@@ -1,16 +1,33 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { getLessonById } from "@/lib/lessonService";
-import { notFound } from "next/navigation";
 import LessonRightPanel from "./LessonRightPanel";
+import Loading from "../../components/Loading";
 
-interface LessonDetailPageProps {
-  params: { id: string };
-}
+export default function BaiHocDetailPage() {
+  const { id } = useParams();
+  const [lesson, setLesson] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function BaiHocDetailPage({ params }: LessonDetailPageProps) {
-  const { id } = await params; // 👈 phải await
-  const lesson = await getLessonById(id);
+  useEffect(() => {
+    if (!id) return;
 
-  if (!lesson) return notFound();
+    setLoading(true);
+    getLessonById(id as string)
+      .then(setLesson)
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <Loading />; // 👈 Hiển thị vòng quay khi đang tải
+
+  if (!lesson)
+    return (
+      <div className="text-center py-20 text-gray-600">
+        Không tìm thấy bài học.
+      </div>
+    );
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -32,8 +49,11 @@ export default async function BaiHocDetailPage({ params }: LessonDetailPageProps
         />
       </div>
 
-      {/* Bên phải: Tabs bằng CSS */}
-      <LessonRightPanel lessonId={id} lessonContent={lesson.description || ""} />
+      {/* Bên phải: Tabs hoặc nội dung phụ */}
+      <LessonRightPanel
+        lessonId={id as string}
+        lessonContent={lesson.description || ""}
+      />
     </div>
   );
 }
