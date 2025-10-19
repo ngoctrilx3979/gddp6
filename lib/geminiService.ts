@@ -1,7 +1,7 @@
 // lib/geminiService.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = "AIzaSyDSw7Ndia1eY2CNAE7ccadH1m2U7mQuAPQ";
+const apiKey = "AIzaSyCSQ9cQYppwfZhp4EW7U5ArgG_lKvfqaDo";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // 🧹 Hàm tách JSON trong response
@@ -142,4 +142,22 @@ Trả về JSON với cấu trúc sau:
 `;
 
   return await callWithRetry(model, prompt);
+}
+export async function askGemini(prompt: string, context: any = {}) {
+  const contextText = JSON.stringify(context, null, 2);
+  const fullPrompt = `
+  Bạn là trợ lý ảo của trang web học tập.
+  Dữ liệu trang web:
+  ${contextText}
+
+  Người dùng hỏi: "${prompt}"
+
+  Hãy trả lời tự nhiên, rõ ràng, có thể chèn link chính xác nếu phù hợp.
+  Nếu không chắc chắn, hãy nói lịch sự.
+  `;
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+ const result = await model.generateContent(fullPrompt);
+     return result.response.text();
+ 
 }

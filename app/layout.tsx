@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect } from "react";
 import "./globals.css";
 import AOS from "aos";
@@ -6,6 +7,7 @@ import "aos/dist/aos.css";
 import Header from "./components/Header";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ChatAssistant from "./components/ChatAssistant"; // 🟢 thêm dòng này
 
 export default function RootLayout({
   children,
@@ -20,6 +22,7 @@ export default function RootLayout({
     <html lang="vi">
       <body className="bg-gray-60 text-gray-800 font-sans">
         <Header />
+
         <main
           className="p-8 bg-white rounded-xl shadow-lg max-w-7xl w-[calc(100vw-60px)] mx-auto my-8"
         >
@@ -37,6 +40,9 @@ export default function RootLayout({
             theme="colored"
           />
         </main>
+
+        {/* 💬 Chat Assistant (AI) */}
+        <ChatAssistant />
       </body>
     </html>
   );
