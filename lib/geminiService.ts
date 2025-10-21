@@ -4,6 +4,27 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const apiKey = "AIzaSyCSQ9cQYppwfZhp4EW7U5ArgG_lKvfqaDo";
 const genAI = new GoogleGenerativeAI(apiKey);
 
+let model: any | null = null;
+
+// ✅ Tạo model duy nhất
+export function getGeminiModel() {
+  if (!model) {
+    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    console.log("⚡ Gemini model ready");
+  }
+  return model;
+}
+
+// ✅ Hàm warmup
+export async function warmupGemini() {
+  const model = getGeminiModel();
+  try {
+    await model.generateContent("ping");
+    console.log("✅ Gemini warmed up");
+  } catch (err) {
+    console.warn("⚠️ Warmup Gemini failed:", err);
+  }
+}
 // 🧹 Hàm tách JSON trong response
 function extractJSON(text: string): string {
   // Bỏ codeblock
@@ -77,7 +98,7 @@ export async function generateQuestions(prompt: string) {
   return await callWithRetry(model, prompt);
 }
 
-// 3. Phân tích năng lực học tập (có thêm dữ liệu chart)
+// 3. Phân tích nâng lực học tập (có thêm dữ liệu chart)
 export async function generateAnalysis(lessons: any[], practices: any[], feedbacks: any[]) {
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -155,9 +176,10 @@ export async function askGemini(prompt: string, context: any = {}) {
   Hãy trả lời tự nhiên, rõ ràng, có thể chèn link chính xác nếu phù hợp.
   Nếu không chắc chắn, hãy nói lịch sự.
   `;
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+ const model = getGeminiModel();
 
  const result = await model.generateContent(fullPrompt);
-     return result.response.text();
+     
+ return result.response.text();
  
 }

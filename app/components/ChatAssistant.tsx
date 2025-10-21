@@ -24,7 +24,11 @@ export default function ChatAssistant() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
   const router = useRouter(); // 🧭 dùng để chuyển trang
-
+  useEffect(() => {
+    import("@/lib/geminiService").then(({ warmupGemini }) => {
+      warmupGemini(); // 🔥 Khởi động ngay khi trang load
+    });
+  }, []);
   // 🔹 Lấy dữ liệu Firestore (bài học + chủ đề)
   useEffect(() => {
     const fetchData = async () => {
@@ -53,6 +57,8 @@ export default function ChatAssistant() {
 
     try {
       const reply = await askGemini(userMessage, {
+        lessons,
+        topics, 
         links: {
           "Giới thiệu": "/gioi-thieu",
           "Liên hệ": "/lien-he",
@@ -113,7 +119,7 @@ export default function ChatAssistant() {
 
       {/* 💬 Hộp thoại Chat */}
       {open && (
-        <div className="fixed bottom-5 right-5 h-100 w-80 bg-white shadow-2xl rounded-2xl border border-gray-200 flex flex-col overflow-hidden">
+        <div className="fixed bottom-5 right-5 h-150 w-100 bg-white shadow-2xl rounded-2xl border border-gray-200 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between bg-blue-600 text-white px-4 py-2">
             <h3 className="font-semibold">Chat Assistant 🤖</h3>
