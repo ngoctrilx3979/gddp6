@@ -7,6 +7,7 @@ import { FaUserCircle } from "react-icons/fa";
 import AdminMenu from "./AdminMenu"; // 👈 thêm dòng này
 import PostMenu from "./PostMenu";
 import LessonMenu from "./LessonMenu";
+import ThamQuanMenu from "./ThamQuanMenu"; // 👈 thêm dòng này
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -42,6 +43,7 @@ export default function Header() {
 
         <PostMenu />
         <LessonMenu />
+        <ThamQuanMenu /> {/* 👈 thêm dòng này */}
         <Link href="/lien-he" style={{ color: "white", textDecoration: "none" }}>Liên hệ</Link>
         {/* 👇 Thêm menu quản trị riêng */}
         <AdminMenu />

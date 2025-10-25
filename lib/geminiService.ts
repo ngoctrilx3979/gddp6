@@ -165,21 +165,86 @@ Trả về JSON với cấu trúc sau:
   return await callWithRetry(model, prompt);
 }
 export async function askGemini(prompt: string, context: any = {}) {
-  const contextText = JSON.stringify(context, null, 2);
-  const fullPrompt = `
-  Bạn là trợ lý ảo của trang web học tập.
-  Dữ liệu trang web:
-  ${contextText}
+  const model = getGeminiModel();
 
-  Người dùng hỏi: "${prompt}"
+  // 🔹 Tách dữ liệu lessons ra khỏi context
+  const lessons = context.lessons || [];
+  const topics = context.topics || [];
+  const otherContext = { ...context };
+  delete otherContext.lessons;
+  delete otherContext.topics;
 
-  Hãy trả lời tự nhiên, rõ ràng, có thể chèn link chính xác nếu phù hợp.
-  Nếu không chắc chắn, hãy nói lịch sự.
-  `;
- const model = getGeminiModel();
+  // 🧩 Giới hạn kích thước chunk (10 bài / chunk)
+  const CHUNK_SIZE = 1;
+  const chunks: any[][] = [];
+  for (let i = 0; i < lessons.length; i += CHUNK_SIZE) {
+    chunks.push(lessons.slice(i, i + CHUNK_SIZE));
+  }
 
- const result = await model.generateContent(fullPrompt);
-     
- return result.response.text();
- 
+  // 🧠 Nếu không có bài học, chỉ gửi context thông thường
+  if (chunks.length === 0) {
+    const contextText = JSON.stringify(otherContext, null, 2);
+    const fullPrompt = `
+Bạn là trợ lý ảo của trang web học tập.
+Dữ liệu trang web:
+${contextText}
+
+Người dùng hỏi: "${prompt}"
+
+Hãy trả lời tự nhiên, rõ ràng, có thể chèn link chính xác nếu phù hợp.
+Nếu không chắc chắn, hãy nói lịch sự.
+`;
+    const result = await model.generateContent(fullPrompt);
+    return result.response.text();
+  }
+
+  // 🚀 Nếu có nhiều bài học, gửi từng chunk
+  let combinedResponse = "";
+  for (let i = 0; i < chunks.length; i++) {
+    const miniContext = {
+      ...otherContext,
+      lessons: chunks[i].map((l) => ({
+        id: l.id,
+        title: l.title,
+        topic: l.topic,
+      })),
+      topics,
+    };
+
+    const contextText = JSON.stringify(miniContext, null, 2);
+    const chunkPrompt = `
+Bạn là trợ lý ảo của trang web học tập.
+Đây là phần dữ liệu ${i + 1}/${chunks.length}:
+${contextText}
+
+Người dùng hỏi: "${prompt}"
+
+Hãy trả lời ngắn gọn, rõ ràng, và chỉ dựa trên dữ liệu trong phần này.
+Nếu cần tổng hợp, hãy gộp thông tin các phần trước đó.
+`;
+
+    try {
+      const result = await model.generateContent(chunkPrompt);
+      combinedResponse += result.response.text() + "\n";
+    } catch (error: any) {
+      if (error.message?.includes("429")) {
+        console.warn(`⚠️ Quota exceeded ở chunk ${i + 1}, chờ 35s...`);
+        await new Promise((res) => setTimeout(res, 35000));
+        i--; // thử lại chunk này
+      } else {
+        console.error(error);
+      }
+    }
+  }
+
+  // ✨ Gửi yêu cầu tổng hợp cuối cùng
+  const summaryPrompt = `
+Dưới đây là các câu trả lời tạm thời từ từng phần dữ liệu:
+${combinedResponse}
+
+Hãy tổng hợp chúng lại thành một câu trả lời hoàn chỉnh, rõ ràng và tự nhiên cho câu hỏi:
+"${prompt}"
+`;
+  const summaryResult = await model.generateContent(summaryPrompt);
+  return summaryResult.response.text().trim();
 }
