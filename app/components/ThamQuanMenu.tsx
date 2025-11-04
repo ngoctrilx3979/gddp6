@@ -64,8 +64,26 @@ export default function ThamQuanMenu() {
           >
             Không gian văn hoá Chủ tịch Tôn Đức Thắng
           </Link>
+
           <Link
             href="/virtual-tour/mieu-ba-chua-xu"
+            style={{
+              display: "block",
+              padding: "10px",
+              textDecoration: "none",
+              color: "#333",
+              borderBottom: "1px solid #eee",
+            }}
+            onClick={() => setOpen(false)}
+          >
+            Miếu Bà Chúa Xứ Núi Sam
+          </Link>
+
+          {/* 🏠 Thêm menu Nhà Bảo Khiêm */}
+          <Link
+            href="/bao-khiem"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: "block",
               padding: "10px",
@@ -74,7 +92,7 @@ export default function ThamQuanMenu() {
             }}
             onClick={() => setOpen(false)}
           >
-            Miếu Bà Chúa Xứ Núi Sam
+            Nhà Bảo Khiêm
           </Link>
         </div>
       )}

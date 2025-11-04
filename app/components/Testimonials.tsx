@@ -1,123 +1,77 @@
 "use client";
 import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
+import { Star } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { Star } from "lucide-react";
-
-const testimonials = [
-  {
-    id: 1,
-    name: "Nguyễn Văn A",
-    grade: "Lớp 6",
-    content:
-      "Website rất hữu ích, giúp em học môn Giáo Dục Địa Phương dễ hiểu và thú vị hơn.",
-    avatar: "/avatar1.png",
-    stars: 5,
-  },
-  {
-    id: 2,
-    name: "Trần Thị B",
-    grade: "Lớp 5",
-    content:
-      "Bài học minh họa trực quan, dễ nhớ. Em rất thích phần luyện tập!",
-    avatar: "/avatar2.png",
-    stars: 4,
-  },
-  {
-    id: 3,
-    name: "Lê Minh C",
-    grade: "Lớp 7",
-    content:
-      "Nhờ website mà em có thể tự học thêm kiến thức ngoài lớp học.",
-    avatar: "/avatar3.png",
-    stars: 5,
-  },
-];
 
 export default function Testimonials() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
 
+  // Lấy feedback từ Firestore
   useEffect(() => {
-    AOS.init({ duration: 1000 });
+    AOS.init({ duration: 800 });
+    const unsub = onSnapshot(collection(db, "feedbacks"), (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      // Sắp xếp theo thời gian mới nhất
+      setFeedbacks(
+        data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+      );
+      // 🎯 In ra terminal (console trình duyệt)
+      console.log("📢 FEEDBACK THẬT:", data);
+    });
+    return () => unsub();
   }, []);
-
-  const next = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  };
-
-  const prev = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? testimonials.length - 1 : prev - 1
-    );
-  };
 
   return (
     <section className="py-12 bg-gray-50">
-      {/* Header */}
       <div className="text-center mb-8" data-aos="fade-up">
         <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded text-sm font-medium">
-          Testimonial
+          Feedback Thật
         </span>
         <h2 className="text-3xl font-bold mt-4 text-gray-800">
-          Câu chuyện thật – Kết quả thật
+          Cảm nhận từ người dùng
         </h2>
         <p className="text-gray-600 mt-2">
-          Lắng nghe cảm nhận của các bạn học sinh khi sử dụng website hỗ trợ
-          học tập Giáo Dục Địa Phương.
+          Những chia sẻ chân thật từ học sinh sử dụng website của chúng ta.
         </p>
       </div>
 
-      {/* Testimonials */}
-      <div className="max-w-5xl mx-auto relative flex items-center gap-6">
-        <button
-          onClick={prev}
-          className="absolute -left-4 top-1/2 transform -translate-y-1/2 bg-orange-50 p-2 rounded hover:bg-orange-100 transition"
-        >
-          ←
-        </button>
+      <div className="max-w-4xl mx-auto grid gap-6 md:grid-cols-2" data-aos="fade-up">
+        {feedbacks.length === 0 && (
+          <p className="text-gray-500 text-center col-span-2">
+            Chưa có feedback nào được gửi.
+          </p>
+        )}
 
-        <div
-          className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6"
-          data-aos="fade-up"
-        >
-          {[testimonials[currentIndex], testimonials[(currentIndex + 1) % testimonials.length]].map(
-            (t) => (
-              <div
-                key={t.id}
-                className="p-6 bg-white shadow rounded-xl flex items-center gap-4"
-              >
-                {/* Avatar */}
-                <img
-                  src={t.avatar}
-                  alt={t.name}
-                  className="w-24 h-24 rounded-lg object-cover"
-                />
-                {/* Content */}
-                <div>
-                  <div className="flex gap-1 mb-2">
-                    {Array.from({ length: t.stars }).map((_, i) => (
-                      <Star
-                        key={i}
-                        size={18}
-                        className="text-orange-500 fill-orange-500"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-gray-600 italic mb-3">“{t.content}”</p>
-                  <h4 className="font-semibold text-gray-800">{t.name}</h4>
-                  <p className="text-sm text-gray-500">{t.grade}</p>
-                </div>
+        {feedbacks.map((fb) => (
+          <div
+            key={fb.id}
+            className="p-6 bg-white shadow-md rounded-xl"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <img
+                src="/avatar1.png"
+                alt="Avatar"
+                className="w-12 h-12 rounded-full"
+              />
+              <div>
+                <p className="font-semibold text-gray-800">{fb.email}</p>
+                <p className="text-xs text-gray-400">
+                  {fb.createdAt?.seconds
+                    ? new Date(fb.createdAt.seconds * 1000).toLocaleString("vi-VN")
+                    : "Chưa rõ thời gian"}
+                </p>
               </div>
-            )
-          )}
-        </div>
-
-        <button
-          onClick={next}
-          className="absolute -right-4 top-1/2 transform -translate-y-1/2 bg-orange-50 p-2 rounded hover:bg-orange-100 transition"
-        >
-          →
-        </button>
+            </div>
+            <p className="text-gray-700 italic mb-3">“{fb.message}”</p>
+            <div className="flex gap-4 text-sm">
+              <span className="text-green-600">👍 {fb.likes || 0}</span>
+              <span className="text-red-600">👎 {fb.dislikes || 0}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

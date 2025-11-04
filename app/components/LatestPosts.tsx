@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getLatestPosts } from "@/lib/postService";
 import Image from "next/image";
-import Link from "next/link"; // ✅
+import Link from "next/link";
 
 export default function LatestPosts() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -10,7 +10,21 @@ export default function LatestPosts() {
 
   useEffect(() => {
     getLatestPosts(3).then((data) => {
-      setPosts(data);
+      // ✅ Ưu tiên lấy ảnh đầu tiên trong description nếu có
+      const processed = data.map((post: any) => {
+        let finalImage = post.imageUrl || "";
+        if (post.description) {
+          const div = document.createElement("div");
+          div.innerHTML = post.description;
+          const img = div.querySelector("img");
+          if (img && img.getAttribute("src")) {
+            finalImage = img.getAttribute("src") as string; // Ưu tiên ảnh trong description
+          }
+        }
+        return { ...post, imageUrl: finalImage };
+      });
+
+      setPosts(processed);
       setLoading(false);
     });
   }, []);
