@@ -13,7 +13,17 @@ export default function Testimonials() {
   useEffect(() => {
     AOS.init({ duration: 800 });
     const unsub = onSnapshot(collection(db, "feedbacks"), (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const data = snap.docs.map((d) => {
+        const docData = d.data();
+        return {
+          id: d.id,
+          createdAt: docData.createdAt ?? null,
+          email: docData.email ?? "",
+          message: docData.message ?? "",
+          likes: docData.likes ?? 0,
+          dislikes: docData.dislikes ?? 0,
+        };
+      });
       // Sắp xếp theo thời gian mới nhất
       setFeedbacks(
         data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))

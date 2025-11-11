@@ -8,6 +8,7 @@ import AdminMenu from "./AdminMenu"; // 👈 thêm dòng này
 import PostMenu from "./PostMenu";
 import LessonMenu from "./LessonMenu";
 import ThamQuanMenu from "./ThamQuanMenu"; // 👈 thêm dòng này
+import Linkmenu from "./LinkMenu";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -44,6 +45,7 @@ export default function Header() {
         <PostMenu />
         <LessonMenu />
         <ThamQuanMenu /> {/* 👈 thêm dòng này */}
+        <Linkmenu />
         <Link href="/lien-he" style={{ color: "white", textDecoration: "none" }}>Liên hệ</Link>
         {/* 👇 Thêm menu quản trị riêng */}
         <AdminMenu />

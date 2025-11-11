@@ -24,7 +24,17 @@ export default function LessonSummary({ lessonId, lessonContent }: { lessonId: s
 
   async function loadSummaries() {
     const data = await getSummariesByLesson(lessonId);
-    setSummaries(data);
+    // Ensure each summary has all required fields
+    const summariesData: Summary[] = data.map((item: any) => ({
+      id: item.id,
+      lessonId: item.lessonId ?? "",
+      title: item.title ?? "",
+      content: item.content ?? "",
+      userId: item.userId ?? "",
+      email: item.email ?? "",
+      createdAt: item.createdAt,
+    }));
+    setSummaries(summariesData);
   }
 
   useEffect(() => {
