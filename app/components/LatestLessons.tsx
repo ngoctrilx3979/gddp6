@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getLatestLessons } from "@/lib/lessonService";
+import { getLatestLessons } from "../..//lib/lessonService";
 import Image from "next/image";
 import Link from "next/link";
 

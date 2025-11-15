@@ -5,8 +5,8 @@ import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { askGemini } from "@/lib/geminiService";
+import { db } from "../../lib/firebase";
+import { askGemini } from "../../lib/geminiService";
 import { useRouter } from "next/navigation"; // 🧭 thêm dòng này
 
 interface Lesson {
@@ -25,7 +25,7 @@ export default function ChatAssistant() {
   const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
   const router = useRouter(); // 🧭 dùng để chuyển trang
   useEffect(() => {
-    import("@/lib/geminiService").then(({ warmupGemini }) => {
+    import("../../lib/geminiService").then(({ warmupGemini }) => {
       warmupGemini(); // 🔥 Khởi động ngay khi trang load
     });
   }, []);
