@@ -66,7 +66,7 @@ export default function LinkMenu() {
           </Link>
 
           <Link
-            href="./lien-ket/chat-gpt"
+            href="./lien-ket/khac"
             style={{
               display: "block",
               padding: "10px",
@@ -76,23 +76,9 @@ export default function LinkMenu() {
             }}
             onClick={() => setOpen(false)}
           >
-            Chat Gpt
+            Khác
           </Link>
 
-          <Link
-            href="./lien-ket/gemini"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "block",
-              padding: "10px",
-              textDecoration: "none",
-              color: "#333",
-            }}
-            onClick={() => setOpen(false)}
-          >
-            Gemini
-          </Link>
         </div>
       )}
     </div>
