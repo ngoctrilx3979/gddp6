@@ -35,7 +35,7 @@ export default function ChatAssistant() {
       const lessonSnap = await getDocs(collection(db, "lessons"));
       const topicSnap = await getDocs(collection(db, "topics"));
       setLessons(
-        lessonSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Lesson[]
+        lessonSnap.docs.map((doc) => ({ id: doc.id, title: (doc.data() as any).title })) as Lesson[]
       );
       setTopics(
         topicSnap.docs.map((doc) => ({

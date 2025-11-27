@@ -1,7 +1,7 @@
 // lib/geminiService.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = "AIzaSyCSQ9cQYppwfZhp4EW7U5ArgG_lKvfqaDo";
+const apiKey = "AIzaSyDw1l9kVsLB3f55mj628PEHvDXm7HRfUtw";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 let model: any | null = null;
@@ -9,7 +9,7 @@ let model: any | null = null;
 // ✅ Tạo model duy nhất
 export function getGeminiModel() {
   if (!model) {
-    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     console.log("⚡ Gemini model ready");
   }
   return model;
@@ -30,11 +30,12 @@ function extractJSON(text: string): string {
   // Bỏ codeblock
   let clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
+  return clean;
   // Regex tìm JSON object đầu tiên
-  const match = clean.match(/\{[\s\S]*\}/);
-  if (match) {
-    return match[0];
-  }
+  // const match = clean.match(/\{[\s\S]*\}/);
+  // if (match) {
+  //   return match[0];
+  // }
   throw new Error("Không tìm thấy JSON trong response: " + text);
 }
 
@@ -45,6 +46,7 @@ async function callWithRetry(model: any, prompt: string, retries = 3, delay = 30
       const result = await model.generateContent(prompt);
       const raw = result.response.text();
       const jsonStr = extractJSON(raw);
+      console.log("✅ Gemini response:", jsonStr);
       return JSON.parse(jsonStr);
     } catch (err: any) {
       if (err.message?.includes("429") && attempt < retries - 1) {
@@ -66,7 +68,7 @@ async function callWithRetry(model: any, prompt: string, retries = 3, delay = 30
 
 // 1. Tóm tắt bài học
 export async function generateSummary(inputContent: string, lessonContent: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `Bạn là một trợ lý AI giúp tóm tắt nội dung học tập.
 
@@ -94,13 +96,13 @@ Cấu trúc JSON:
 
 // 2. Sinh câu hỏi luyện tập
 export async function generateQuestions(prompt: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
   return await callWithRetry(model, prompt);
 }
 
 // 3. Phân tích nâng lực học tập (có thêm dữ liệu chart)
 export async function generateAnalysis(lessons: any[], practices: any[], feedbacks: any[]) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   // 🔹 Rút gọn dữ liệu trước khi gửi để tránh quota
   const lessonData = lessons.map((l) => ({ id: l.id, title: l.title }));

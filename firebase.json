@@ -1,0 +1,19 @@
+{
+  "hosting": [
+    {
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "site": "gddp6-34b1d.web.app",
+      "rewrites": [
+        {
+          "source": "**",
+          "function": "nextjsFunc"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  }
+}

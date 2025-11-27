@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "default": "gddp6-34b1d",
+    "gddp6": "gddp6-34b1d"
+  },
+  "targets": {
+    "gddp6-34b1d": {
+      "hosting": {
+        "gddp6-34b1d": [
+          "nextjsFunc"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

@@ -1,19 +1,37 @@
-import { notFound } from "next/navigation";
-import { getPostById, getPostsByCategory } from "@/lib/postService";
-import { Post } from "@/types/post";
+'use client';
+
+import { notFound, useParams } from "next/navigation";
+import { getPostById, getPostsByCategory } from "../../../lib/postService";
+import { Post } from "../../../types/post";
 import Link from "next/link";
-import { getExcerpt } from "@/lib/textUtils";
+import { getExcerpt } from "../../../lib/textUtils";
+import { useEffect, useState } from "react";
+import Loading from "../../components/Loading";
 
-interface PostDetailPageProps {
-  params: { id: string };
-}
 
-export default async function PostDetailPage({ params }: PostDetailPageProps) {
+export default async function PostDetailPage() {
 
- 
+ const { id } = useParams();
+  const [post, setPost] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!id) return;
 
-  const post: Post | null = await getPostById(params.id);
-  if (!post) return notFound();
+    setLoading(true);
+    getPostById(id as string)
+      .then(setPost)
+      .finally(() => setLoading(false));
+  }, [id]);
+
+
+  if (loading) return <Loading />; // 👈 Hiển thị vòng quay khi đang tải
+
+  if (!post)
+    return (
+      <div className="text-center py-20 text-gray-600">
+        Không tìm thấy bài học.
+      </div>
+    );
 
   const relatedPosts: Post[] = await getPostsByCategory(post.categoryId || "", post.id);
 
