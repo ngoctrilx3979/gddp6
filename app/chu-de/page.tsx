@@ -8,6 +8,8 @@ import {
   updateTopic,
 } from '@/lib/topicService';
 
+import Loading from '../components/Loading';
+
 export default function CHUDEpage() {
   const [topics, setTopics] = useState<any[]>([]);
   const [name, setName] = useState('');
@@ -15,45 +17,74 @@ export default function CHUDEpage() {
   const [description, setDescription] = useState('');
 
   const [editId, setEditId] = useState<string | null>(null);
-  const [editData, setEditData] = useState({ name: '', order: '', description: '' });
+  const [editData, setEditData] = useState({
+    name: '',
+    order: '',
+    description: '',
+  });
+
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     const data = await getTopics();
-    // Sắp xếp theo thứ tự tăng dần
     data.sort((a: any, b: any) => a.order - b.order);
     setTopics(data);
   };
 
   useEffect(() => {
-    fetchData();
+    const load = async () => {
+      setLoading(true);
+      await fetchData();
+      setLoading(false);
+    };
+    load();
   }, []);
 
   const handleAdd = async () => {
     if (!name || !order) return alert('Vui lòng điền đầy đủ thông tin');
+
+    setLoading(true);
+
     await addTopic(name, Number(order), description);
+
     setName('');
     setOrder('');
     setDescription('');
-    fetchData();
+
+    await fetchData();
+    setLoading(false);
   };
 
   const handleDelete = async (id: string) => {
+    if (!confirm('Bạn có chắc muốn xóa chủ đề này?')) return;
+
+    setLoading(true);
     await deleteTopic(id);
-    fetchData();
+    await fetchData();
+    setLoading(false);
   };
 
   const handleUpdate = async () => {
-    if (!editData.name || !editData.order) return alert('Thiếu thông tin');
+    if (!editData.name || !editData.order)
+      return alert('Thiếu thông tin');
+
+    setLoading(true);
+
     await updateTopic(
       editId!,
       editData.name,
       Number(editData.order),
       editData.description
     );
+
     setEditId(null);
     setEditData({ name: '', order: '', description: '' });
-    fetchData();
+
+    await fetchData();
+    setLoading(false);
   };
+
+  if (loading) return <Loading />;
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -68,6 +99,7 @@ export default function CHUDEpage() {
           onChange={(e) => setName(e.target.value)}
           className="border p-3 rounded"
         />
+
         <input
           type="number"
           placeholder="Thứ tự"
@@ -75,13 +107,14 @@ export default function CHUDEpage() {
           onChange={(e) => setOrder(e.target.value)}
           className="border p-3 rounded"
         />
+
         <textarea
-          
           placeholder="Diễn giải"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="border p-3 rounded md:col-span-2"
         />
+
         <button
           onClick={handleAdd}
           className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700"
@@ -101,11 +134,13 @@ export default function CHUDEpage() {
               <th className="p-3">Hành động</th>
             </tr>
           </thead>
+
           <tbody>
             {topics.map((cat) => (
               <tr key={cat.id} className="border-t">
                 {editId === cat.id ? (
                   <>
+                    {/* ----- EDIT MODE ----- */}
                     <td className="p-3">
                       <input
                         type="number"
@@ -116,6 +151,7 @@ export default function CHUDEpage() {
                         className="border p-1 rounded w-16"
                       />
                     </td>
+
                     <td className="p-3">
                       <input
                         value={editData.name}
@@ -125,16 +161,20 @@ export default function CHUDEpage() {
                         className="border p-1 rounded w-full"
                       />
                     </td>
+
                     <td className="p-3">
                       <textarea
-                      
                         value={editData.description}
                         onChange={(e) =>
-                          setEditData({ ...editData, description: e.target.value })
+                          setEditData({
+                            ...editData,
+                            description: e.target.value,
+                          })
                         }
-                       className="border p-1 rounded w-full resize-none h-20"
+                        className="border p-1 rounded w-full resize-none h-20"
                       />
                     </td>
+
                     <td className="p-3 space-x-2">
                       <button
                         onClick={handleUpdate}
@@ -142,6 +182,7 @@ export default function CHUDEpage() {
                       >
                         Lưu
                       </button>
+
                       <button
                         onClick={() => setEditId(null)}
                         className="text-gray-600 hover:underline"
@@ -152,9 +193,11 @@ export default function CHUDEpage() {
                   </>
                 ) : (
                   <>
+                    {/* ----- VIEW MODE ----- */}
                     <td className="p-3">{cat.order}</td>
                     <td className="p-3">{cat.name}</td>
                     <td className="p-3">{cat.description}</td>
+
                     <td className="p-3 space-x-2">
                       <button
                         onClick={() => {
@@ -169,6 +212,7 @@ export default function CHUDEpage() {
                       >
                         Sửa
                       </button>
+
                       <button
                         onClick={() => handleDelete(cat.id)}
                         className="text-red-600 hover:underline"

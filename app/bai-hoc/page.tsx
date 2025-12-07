@@ -3,32 +3,45 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
+
 import { getTopics } from '@/lib/topicService';
-import { addLesson, getLessons, updateLesson, deleteLesson } from '@/lib/lessonService';
+import {
+  addLesson,
+  getLessons,
+  updateLesson,
+  deleteLesson,
+} from '@/lib/lessonService';
 
+import Loading from '../components/Loading'; // 👈 Import Loading
 
-
+// Quill toolbar
 const modules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
-    ["bold", "italic", "underline", "strike"], // chữ đậm, nghiêng, gạch chân
-    [{ color: [] }, { background: [] }],       // màu chữ, màu nền
-    [{ align: [] }],                           // canh lề
-    [{ list: "ordered" }, { list: "bullet" }], // danh sách
-    ["link", "image"],                         // chèn link, ảnh
-    ["clean"],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ align: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link', 'image'],
+    ['clean'],
   ],
-  
 };
 
 const formats = [
-  "header",
-  "bold", "italic", "underline", "strike",
-  "color", "background",
-  "align",
-  "list", "bullet",
-  "link", "image",
+  'header',
+  'bold',
+  'italic',
+  'underline',
+  'strike',
+  'color',
+  'background',
+  'align',
+  'list',
+  'bullet',
+  'link',
+  'image',
 ];
+
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function BaiHocPage() {
@@ -39,31 +52,44 @@ export default function BaiHocPage() {
   const [lessons, setLessons] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // pagination state
   const [lastDoc, setLastDoc] = useState<any>(null);
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 5;
 
+  const [loading, setLoading] = useState(true);
+
   const fetchData = async (reset = false) => {
-    const { data, lastDoc: newLastDoc } = await getLessons(PAGE_SIZE, reset ? null : lastDoc);
+    const { data, lastDoc: newLastDoc } = await getLessons(
+      PAGE_SIZE,
+      reset ? null : lastDoc
+    );
+
     if (reset) {
       setLessons(data);
     } else {
       setLessons((prev) => [...prev, ...data]);
     }
+
     setLastDoc(newLastDoc);
     setHasMore(data.length === PAGE_SIZE);
   };
 
   useEffect(() => {
-    getTopics().then(setTopics);
-    fetchData(true);
+    const load = async () => {
+      setLoading(true);
+      const topicData = await getTopics();
+      setTopics(topicData);
+      await fetchData(true);
+      setLoading(false);
+    };
+    load();
   }, []);
 
   const handleSubmit = async () => {
-    if (!title || !topicId || !description) {
+    if (!title || !topicId || !description)
       return alert('Vui lòng điền đầy đủ thông tin');
-    }
+
+    setLoading(true);
 
     if (editingId) {
       await updateLesson(editingId, { title, topicId, description });
@@ -75,7 +101,9 @@ export default function BaiHocPage() {
     setTitle('');
     setTopicId('');
     setDescription('');
-    fetchData(true);
+
+    await fetchData(true);
+    setLoading(false);
   };
 
   const handleEdit = (lesson: any) => {
@@ -86,11 +114,21 @@ export default function BaiHocPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Bạn có chắc muốn xóa bài học này?')) {
-      await deleteLesson(id);
-      fetchData(true);
-    }
+    if (!confirm('Bạn có chắc muốn xóa bài học này?')) return;
+
+    setLoading(true);
+    await deleteLesson(id);
+    await fetchData(true);
+    setLoading(false);
   };
+
+  const loadMore = async () => {
+    setLoading(true);
+    await fetchData(false);
+    setLoading(false);
+  };
+
+  if (loading) return <Loading />;
 
   return (
     <div className="max-w-5xl mx-auto p-8">
@@ -114,11 +152,13 @@ export default function BaiHocPage() {
           className="border p-3 w-full rounded"
         >
           <option value="">-- Chọn chủ đề --</option>
-          {topics.map((topic) => (
-            <option key={topic.id} value={topic.id}>
-              {topic.name}
-            </option>
-          ))}
+          {topics
+            .sort((a, b) => a.order - b.order)
+            .map((topic) => (
+              <option key={topic.id} value={topic.id}>
+                {topic.order}. {topic.name}
+              </option>
+            ))}
         </select>
 
         <ReactQuill
@@ -127,9 +167,8 @@ export default function BaiHocPage() {
           onChange={setDescription}
           placeholder="Nhập nội dung bài học..."
           className="bg-white"
-          modules={modules}   // 👈 thêm vào
-          formats={formats}   // 👈 thêm vào
-         
+          modules={modules}
+          formats={formats}
         />
 
         <button
@@ -153,7 +192,7 @@ export default function BaiHocPage() {
         )}
       </div>
 
-      {/* Danh sách */}
+      {/* List */}
       <h2 className="text-xl font-semibold mb-2">Danh sách bài học</h2>
       <ul className="space-y-2">
         {lessons.map((lesson) => (
@@ -165,11 +204,15 @@ export default function BaiHocPage() {
               <h3 className="font-bold">{lesson.title}</h3>
               <p className="text-sm text-gray-600">
                 {lesson.createdAt?.seconds
-                  ? new Date(lesson.createdAt.seconds * 1000).toLocaleString()
-                  : '---'}{' '}
-                | Chủ đề: {topics.find((c) => c.id === lesson.topicId)?.name || '---'}
+                  ? new Date(lesson.createdAt.seconds * 1000).toLocaleString(
+                      'vi-VN'
+                    )
+                  : '---'}
+                {' | Chủ đề: '}
+                {topics.find((t) => t.id === lesson.topicId)?.name || '---'}
               </p>
             </div>
+
             <div className="space-x-2">
               <button
                 onClick={() => handleEdit(lesson)}
@@ -177,6 +220,7 @@ export default function BaiHocPage() {
               >
                 Sửa
               </button>
+
               <button
                 onClick={() => handleDelete(lesson.id)}
                 className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
@@ -191,7 +235,7 @@ export default function BaiHocPage() {
       {hasMore && (
         <div className="mt-4 text-center">
           <button
-            onClick={() => fetchData(false)}
+            onClick={loadMore}
             className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
           >
             Tải thêm

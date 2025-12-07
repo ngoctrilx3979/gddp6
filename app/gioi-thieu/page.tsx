@@ -1,8 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Loading from "../components/Loading"; // 👈 nhớ đúng path
 
 export default function GioiThieuPage() {
+  const [loading, setLoading] = useState(true);
+
+  // Fake load 0.8s cho mượt (có thể bỏ nếu không cần)
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 👇 Khi đang tải, trả về Loading trước
+  if (loading) return <Loading />;
+
   return (
     <main className="max-w-5xl mx-auto py-10 px-6 space-y-12 text-gray-800">
       {/* 🟦 SECTION 1: GIỚI THIỆU VỀ MÔN HỌC */}

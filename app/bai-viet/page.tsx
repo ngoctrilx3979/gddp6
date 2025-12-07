@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 
+import Loading from '../components/Loading'; // 👈 thêm Loading
+
 import { getCategories } from '@/lib/categoryService';
 import {
   addPost,
@@ -22,12 +24,18 @@ export default function BaiVietPage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // pagination state
+  // loading
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // pagination
   const [lastDoc, setLastDoc] = useState<any>(null);
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 5;
 
   const fetchData = async (reset = false) => {
+    if (reset) setLoading(true);
+
     const { data, lastDoc: newLastDoc } = await getPosts(
       PAGE_SIZE,
       reset ? null : lastDoc
@@ -41,11 +49,19 @@ export default function BaiVietPage() {
 
     setLastDoc(newLastDoc);
     setHasMore(data.length === PAGE_SIZE);
+
+    if (reset) setLoading(false);
   };
 
   useEffect(() => {
-    getCategories().then(setCategories);
-    fetchData(true);
+    const load = async () => {
+      setLoading(true);
+      const cate = await getCategories();
+      setCategories(cate);
+      await fetchData(true);
+      setLoading(false);
+    };
+    load();
   }, []);
 
   const handleSubmit = async () => {
@@ -79,6 +95,9 @@ export default function BaiVietPage() {
       fetchData(true);
     }
   };
+
+  // 👉 Khi trang đang tải
+  if (loading) return <Loading />;
 
   return (
     <div className="max-w-6xl mx-auto p-8">
@@ -182,10 +201,14 @@ export default function BaiVietPage() {
       {hasMore && (
         <div className="mt-4 text-center">
           <button
-            onClick={() => fetchData(false)}
+            onClick={async () => {
+              setLoadingMore(true);
+              await fetchData(false);
+              setLoadingMore(false);
+            }}
             className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
           >
-            Tải thêm
+            {loadingMore ? 'Đang tải...' : 'Tải thêm'}
           </button>
         </div>
       )}

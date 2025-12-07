@@ -79,7 +79,7 @@ export default function ThamQuanMenu() {
             Miếu Bà Chúa Xứ Núi Sam
           </Link>
 
-          {/* 🏠 Thêm menu Nhà Bảo Khiêm */}
+          {/* 🏠 Thêm menu Đình Bình Đức */}
           <Link
             href="/bao-khiem"
             target="_blank"
@@ -92,7 +92,7 @@ export default function ThamQuanMenu() {
             }}
             onClick={() => setOpen(false)}
           >
-            Nhà Bảo Khiêm
+            Đình Bình Đức, Long Xuyên
           </Link>
         </div>
       )}
