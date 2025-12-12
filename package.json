@@ -1,5 +1,4 @@
 {
-  "homepage": "https://ngoctrilx3979.github.io/gddp6",
   "name": "gddp6",
   "version": "0.1.0",
   "private": true,
@@ -7,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "deploy": "gh-pages -d out"
+    "lint": "next lint"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
