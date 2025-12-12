@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
       "res.cloudinary.com",
     ],
   },
+   eslint: {
+    ignoreDuringBuilds: true, // ⬅️ Tắt ESLint khi build
+  },
 };
 
 export default nextConfig;

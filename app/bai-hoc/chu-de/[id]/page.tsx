@@ -5,10 +5,11 @@ import { useParams } from "next/navigation";
 import { getLessonsByTopic } from "@/lib/lessonService";
 import Loading from "../../../components/Loading";
 import Link from "next/link";
+import { Lesson } from "@/types/lesson";
 
 export default function BaiHocTheoChuDePage() {
   const { id } = useParams();
-  const [lessons, setLessons] = useState<any[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
