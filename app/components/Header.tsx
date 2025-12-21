@@ -4,15 +4,17 @@ import Link from "next/link";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { FaUserCircle } from "react-icons/fa";
-import AdminMenu from "./AdminMenu"; // 👈 thêm dòng này
+
+import AdminMenu from "./AdminMenu";
 import PostMenu from "./PostMenu";
 import LessonMenu from "./LessonMenu";
-import ThamQuanMenu from "./ThamQuanMenu"; // 👈 thêm dòng này
+import ThamQuanMenu from "./ThamQuanMenu";
 import Linkmenu from "./LinkMenu";
+import GameMenu from "./GameMenu";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -23,7 +25,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    setMenuOpen(false);
+    setUserMenuOpen(false);
   };
 
   return (
@@ -35,31 +37,50 @@ export default function Header() {
         justifyContent: "space-between",
         alignItems: "center",
         color: "white",
+        position: "relative",
+        zIndex: 50,
       }}
     >
-      {/* 🔹 Menu điều hướng chung */}
-      <nav style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-        <Link href="/" style={{ color: "white", textDecoration: "none" }}>Trang chủ</Link>
-        <Link href="/gioi-thieu" style={{ color: "white", textDecoration: "none" }}>Giới thiệu</Link>
+      {/* 🔹 MENU TRÁI */}
+      <nav
+        style={{
+          display: "flex",
+          gap: "1.5rem",
+          alignItems: "center",
+        }}
+      >
+        <Link href="/" style={{ color: "white", textDecoration: "none" }}>
+          Trang chủ
+        </Link>
+
+        <Link href="/gioi-thieu" style={{ color: "white", textDecoration: "none" }}>
+          Giới thiệu
+        </Link>
 
         <PostMenu />
         <LessonMenu />
-        <ThamQuanMenu /> {/* 👈 thêm dòng này */}
+        <ThamQuanMenu />
+
+        {/* 🎮 GAME MENU */}
+        <GameMenu />
+
         <Linkmenu />
-        <Link href="/lien-he" style={{ color: "white", textDecoration: "none" }}>Liên hệ</Link>
-        {/* 👇 Thêm menu quản trị riêng */}
+
+        <Link href="/lien-he" style={{ color: "white", textDecoration: "none" }}>
+          Liên hệ
+        </Link>
+
         <AdminMenu />
       </nav>
 
-      {/* 🔸 User menu */}
+      {/* 🔸 USER MENU PHẢI */}
       <div style={{ position: "relative" }}>
         {user ? (
           <>
             <div
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
               style={{
                 cursor: "pointer",
-                color: "white",
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
@@ -69,7 +90,11 @@ export default function Header() {
                 <img
                   src={user.photoURL}
                   alt="avatar"
-                  style={{ width: 32, height: 32, borderRadius: "50%" }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                  }}
                 />
               ) : (
                 <FaUserCircle size={32} />
@@ -77,58 +102,64 @@ export default function Header() {
               <span>{user.displayName || user.email}</span>
             </div>
 
-            {menuOpen && (
+            {userMenuOpen && (
               <div
                 style={{
                   position: "absolute",
                   right: 0,
-                  marginTop: "0.5rem",
-                  backgroundColor: "white",
+                  top: "120%",
+                  background: "white",
                   color: "#333",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                  minWidth: "180px",
+                  borderRadius: "10px",
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                  minWidth: "200px",
                   zIndex: 100,
                 }}
               >
-                <div style={{ padding: "10px", borderBottom: "1px solid #eee" }}>
-                  <p style={{ margin: 0, fontWeight: "bold" }}>{user.displayName || "Người dùng"}</p>
-                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#555" }}>{user.email}</p>
+                <div style={{ padding: "12px", borderBottom: "1px solid #eee" }}>
+                  <p style={{ margin: 0, fontWeight: 600 }}>
+                    {user.displayName || "Người dùng"}
+                  </p>
+                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#666" }}>
+                    {user.email}
+                  </p>
                 </div>
+
                 <Link
                   href="/phan-tich"
+                  onClick={() => setUserMenuOpen(false)}
                   style={{
                     display: "block",
-                    padding: "10px",
+                    padding: "12px",
                     textDecoration: "none",
                     color: "#333",
                     borderBottom: "1px solid #eee",
                   }}
-                  onClick={() => setMenuOpen(false)}
                 >
-                  Phân tích
+                  📊 Phân tích
                 </Link>
+
                 <button
                   onClick={handleLogout}
                   style={{
                     width: "100%",
-                    padding: "10px",
+                    padding: "12px",
                     textAlign: "left",
                     background: "none",
                     border: "none",
                     cursor: "pointer",
                     color: "var(--color-accent)",
-                    fontWeight: "bold",
+                    fontWeight: 600,
                   }}
                 >
-                  Đăng xuất
+                  🚪 Đăng xuất
                 </button>
               </div>
             )}
           </>
         ) : (
           <Link href="/dang-nhap" style={{ color: "white", textDecoration: "none" }}>
-            Đăng Nhập
+            Đăng nhập
           </Link>
         )}
       </div>

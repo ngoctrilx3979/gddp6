@@ -1,7 +1,7 @@
 // lib/geminiService.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = "AIzaSyA1Xr5X0PDFtqcUKV4Lwi3Fwj5sKB4i314";
+const apiKey = "AIzaSyBfdoshlWaaryhfsVKRUOSV5NPewMbMbz4";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 let model: any | null = null;
@@ -9,7 +9,7 @@ let model: any | null = null;
 // ✅ Tạo model duy nhất
 export function getGeminiModel() {
   if (!model) {
-    model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     console.log("⚡ Gemini model ready");
   }
   return model;
@@ -68,7 +68,7 @@ async function callWithRetry(model: any, prompt: string, retries = 3, delay = 30
 
 // 1. Tóm tắt bài học
 export async function generateSummary(inputContent: string, lessonContent: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `Bạn là một trợ lý AI giúp tóm tắt nội dung học tập.
 
@@ -96,13 +96,13 @@ Cấu trúc JSON:
 
 // 2. Sinh câu hỏi luyện tập
 export async function generateQuestions(prompt: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   return await callWithRetry(model, prompt);
 }
 
 // 3. Phân tích nâng lực học tập (có thêm dữ liệu chart)
 export async function generateAnalysis(lessons: any[], practices: any[], feedbacks: any[]) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   // 🔹 Rút gọn dữ liệu trước khi gửi để tránh quota
   const lessonData = lessons.map((l) => ({ id: l.id, title: l.title }));
