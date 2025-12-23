@@ -20,7 +20,7 @@ export default function GameMenu() {
 
   return (
     <div ref={menuRef} style={{ position: "relative" }}>
-      {/* 🔹 Nút Game */}
+      {/* 🎮 Nút Game */}
       <div
         onClick={() => setOpen(!open)}
         style={{
@@ -29,6 +29,7 @@ export default function GameMenu() {
           alignItems: "center",
           gap: "6px",
           color: "white",
+          fontWeight: 500,
         }}
       >
         <FaGamepad />
@@ -44,45 +45,54 @@ export default function GameMenu() {
             top: "120%",
             left: 0,
             background: "white",
-            borderRadius: "10px",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-            minWidth: "220px",
+            borderRadius: "12px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+            minWidth: "240px",
             overflow: "hidden",
             zIndex: 100,
           }}
         >
-          {/* 🃏 Lật thẻ */}
+          {/* 🃏 Lật thẻ ký ức */}
           <Link
             href="/games/lat-the"
             onClick={() => setOpen(false)}
-            style={{
-              display: "block",
-              padding: "12px 16px",
-              textDecoration: "none",
-              color: "#333",
-              fontWeight: 500,
-            }}
+            style={menuItemStyle}
           >
             🃏 Lật thẻ ký ức
+            <span style={subText}>Ghi nhớ hình ảnh</span>
           </Link>
 
           {/* ⚡ Flow Free */}
           <Link
-            href="/game/flow-free"
+            href="/games/flow-free"
             onClick={() => setOpen(false)}
             style={{
-              display: "block",
-              padding: "12px 16px",
-              textDecoration: "none",
-              color: "#333",
-              fontWeight: 500,
+              ...menuItemStyle,
               borderTop: "1px solid #eee",
             }}
           >
             ⚡ Flow Free
+            <span style={subText}>Nối điện thông minh</span>
           </Link>
         </div>
       )}
     </div>
   );
 }
+
+/* 🎨 STYLE DÙNG CHUNG */
+const menuItemStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  padding: "14px 18px",
+  textDecoration: "none",
+  color: "#111",
+  fontWeight: 600,
+};
+
+const subText: React.CSSProperties = {
+  fontSize: "0.8rem",
+  fontWeight: 400,
+  color: "#666",
+  marginTop: "4px",
+};
