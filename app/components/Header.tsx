@@ -139,6 +139,22 @@ export default function Header() {
                   📊 Phân tích
                 </Link>
 
+                
+                <Link
+                  href="/luyen-tap"
+                  onClick={() => setUserMenuOpen(false)}
+                  style={{
+                    display: "block",
+                    padding: "12px",
+                    textDecoration: "none",
+                    color: "#333",
+                    borderBottom: "1px solid #eee",
+                  }}
+                >
+                  📝 Đã luyện tập
+                </Link>
+
+
                 <button
                   onClick={handleLogout}
                   style={{

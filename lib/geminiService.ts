@@ -1,7 +1,7 @@
 // lib/geminiService.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = "AIzaSyBfdoshlWaaryhfsVKRUOSV5NPewMbMbz4";
+const apiKey = "AIzaSyAFxYz_5hqfm1-yQIn5nNVf8NSJl1qxSrw";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 let model: any | null = null;
@@ -9,7 +9,7 @@ let model: any | null = null;
 // ✅ Tạo model duy nhất
 export function getGeminiModel() {
   if (!model) {
-    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     console.log("⚡ Gemini model ready");
   }
   return model;
