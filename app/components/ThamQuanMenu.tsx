@@ -81,7 +81,7 @@ export default function ThamQuanMenu() {
 
           {/* 🏠 Thêm menu Đình Bình Đức */}
           <Link
-            href="/bao-khiem"
+            href="/dinh-binh-duc"
             target="_blank"
             rel="noopener noreferrer"
             style={{

@@ -1,10 +1,10 @@
 "use client";
 
-export default function BaoKhiemPage() {
+export default function DinhBinhDucPage() {
   return (
     <div className="w-full h-screen">
       <iframe
-        src="/bao-khiem/index.htm"
+        src="/dinh-binh-duc/index.htm"
         className="w-full h-full border-0"
         allowFullScreen
       ></iframe>
