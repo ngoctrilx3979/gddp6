@@ -1,45 +1,4 @@
-function waitForMsgType(target, type) {
-  return new Promise((resolve) => {
-    target.addEventListener("message", function onMsg({ data }) {
-      if ((data == null ? void 0 : data.type) !== type) return;
-      target.removeEventListener("message", onMsg);
-      resolve(data);
-    });
-  });
-}
-waitForMsgType(self, "wasm_bindgen_worker_init").then(async ({ init: init2, receiver }) => {
-  const pkg = await Promise.resolve().then(function() {
-    return gslib;
-  });
-  await pkg.default(init2);
-  postMessage({ type: "wasm_bindgen_worker_ready" });
-  pkg.wbg_rayon_start_worker(receiver);
-});
-async function startWorkers(module, memory2, builder) {
-  if (builder.numThreads() === 0) {
-    throw new Error(`num_threads must be > 0.`);
-  }
-  const workerInit = {
-    type: "wasm_bindgen_worker_init",
-    init: { module_or_path: module, memory: memory2 },
-    receiver: builder.receiver()
-  };
-  await Promise.all(
-    Array.from({ length: builder.numThreads() }, async () => {
-      const worker = new Worker(new URL(
-        /* @vite-ignore */
-        "" + new URL("worker1.js", import.meta.url).href,
-        import.meta.url
-      ), {
-        type: "module"
-      });
-      worker.postMessage(workerInit);
-      await waitForMsgType(worker, "wasm_bindgen_worker_ready");
-      return worker;
-    })
-  );
-  builder.build();
-}
+import { s as startWorkers } from "./worker0.js";
 let wasm;
 function isLikeNone(x) {
   return x === void 0 || x === null;
@@ -1383,8 +1342,8 @@ function __wbg_get_imports() {
   };
   return imports;
 }
-function __wbg_init_memory(imports, memory2) {
-  imports.wbg.memory = memory2 || new WebAssembly.Memory({ initial: 23, maximum: 65536, shared: true });
+function __wbg_init_memory(imports, memory) {
+  imports.wbg.memory = memory || new WebAssembly.Memory({ initial: 23, maximum: 65536, shared: true });
 }
 function __wbg_finalize_init(instance, module, thread_stack_size) {
   wasm = instance.exports;
@@ -1399,30 +1358,30 @@ function __wbg_finalize_init(instance, module, thread_stack_size) {
   wasm.__wbindgen_start(thread_stack_size);
   return wasm;
 }
-function initSync(module, memory2) {
+function initSync(module, memory) {
   if (wasm !== void 0) return wasm;
   let thread_stack_size;
   if (typeof module !== "undefined") {
     if (Object.getPrototypeOf(module) === Object.prototype) {
-      ({ module, memory: memory2, thread_stack_size } = module);
+      ({ module, memory, thread_stack_size } = module);
     } else {
       console.warn("using deprecated parameters for `initSync()`; pass a single object instead");
     }
   }
   const imports = __wbg_get_imports();
-  __wbg_init_memory(imports, memory2);
+  __wbg_init_memory(imports, memory);
   if (!(module instanceof WebAssembly.Module)) {
     module = new WebAssembly.Module(module);
   }
   const instance = new WebAssembly.Instance(module, imports);
   return __wbg_finalize_init(instance, module, thread_stack_size);
 }
-async function __wbg_init(module_or_path, memory2) {
+async function __wbg_init(module_or_path, memory) {
   if (wasm !== void 0) return wasm;
   let thread_stack_size;
   if (typeof module_or_path !== "undefined") {
     if (Object.getPrototypeOf(module_or_path) === Object.prototype) {
-      ({ module_or_path, memory: memory2, thread_stack_size } = module_or_path);
+      ({ module_or_path, memory, thread_stack_size } = module_or_path);
     } else {
       console.warn("using deprecated parameters for the initialization function; pass a single object instead");
     }
@@ -1434,17 +1393,16 @@ async function __wbg_init(module_or_path, memory2) {
   if (typeof module_or_path === "string" || typeof Request === "function" && module_or_path instanceof Request || typeof URL === "function" && module_or_path instanceof URL) {
     module_or_path = fetch(module_or_path);
   }
-  __wbg_init_memory(imports, memory2);
+  __wbg_init_memory(imports, memory);
   const { instance, module } = await __wbg_load(await module_or_path, imports);
   return __wbg_finalize_init(instance, module, thread_stack_size);
 }
-var gslib = /* @__PURE__ */ Object.freeze({
-  __proto__: null,
+export {
   Hit,
   Point,
   SortData,
   SplatBuffer,
-  default: __wbg_init,
+  __wbg_init as default,
   fetch_js,
   fetch_stream_js,
   get_bytes_per_color,
@@ -1457,109 +1415,4 @@ var gslib = /* @__PURE__ */ Object.freeze({
   load_url,
   wbg_rayon_PoolBuilder,
   wbg_rayon_start_worker
-});
-const isIOS = function() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent);
 };
-const isVR = function() {
-  return /\sVR\s|OculusBrowser|PicoBrowser/i.test(navigator.userAgent);
-};
-let initialized = false;
-let memory;
-async function initWasm(workerLimit) {
-  if (initialized) return;
-  initialized = true;
-  memory = (await __wbg_init(
-    void 0,
-    isIOS() || isVR() ? new WebAssembly.Memory({
-      initial: 23,
-      maximum: 8192,
-      shared: true
-    }) : void 0
-  )).memory;
-  init_console_error();
-}
-function disposeWasm() {
-  if (initialized) {
-    memory = void 0;
-    initialized = false;
-  }
-}
-function getWasmMemory() {
-  return memory;
-}
-let sortData;
-onmessage = async function(event) {
-  const data = event.data;
-  if (data && data.method !== void 0) {
-    if (data.method != 0 && !sortData) return;
-    switch (data.method) {
-      case 0:
-        await initWasm();
-        const payload = data.payload;
-        init(payload);
-        postMessage({
-          method: data.method
-        });
-        break;
-      case 1:
-        const positionsInput = data.payload;
-        postMessage({
-          method: data.method,
-          payload: setPositions(positionsInput)
-        });
-        break;
-      case 2:
-        const boundsInput = data.payload;
-        postMessage({
-          method: data.method,
-          payload: setBounds(boundsInput)
-        });
-        break;
-      case 3:
-        const sortInput = data.payload;
-        postMessage({
-          method: data.method,
-          payload: sort(sortInput)
-        });
-        break;
-      case 4:
-        dispose();
-        break;
-      default:
-        console.error("Unknown method:", data.method);
-        break;
-    }
-  }
-};
-function init(payload) {
-  if (sortData) sortData.free();
-  sortData = new SortData(payload.splatCount, payload.dynamicMode, payload.useSharedMemory, payload.maxScenes);
-}
-function dispose() {
-  if (sortData) {
-    sortData.free();
-    sortData = void 0;
-  }
-  disposeWasm();
-}
-function setPositions(payload) {
-  sortData.setPositions(new Uint8Array(payload.positions.buffer), payload.offset, payload.halfPrecision);
-  return {
-    offset: payload.offset,
-    length: payload.positions.length / 3
-  };
-}
-function setBounds(payload) {
-  sortData.setBounds(payload.min, payload.max);
-  return {};
-}
-function sort(payload) {
-  let startTime = performance.now();
-  let count = sortData.sort(payload.cameraPos, payload.cameraDir);
-  return {
-    sortedIndices: sortData.use_shared_memory ? new Uint32Array(getWasmMemory().buffer, sortData.getSortedIndicesPtr(), count) : new Uint32Array(sortData.getSortedIndices().buffer, 0, count),
-    renderCount: count,
-    time: performance.now() - startTime
-  };
-}

@@ -1,35 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <title>Untitled 1</title>
+    <title>Untitled 7</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <meta name="viewport" id="metaViewport" content="user-scalable=no, initial-scale=1, width=device-width, viewport-fit=cover" data-tdv-general-scale="0.5"/>
-    <meta name="apple-mobile-web-app-capable" content="yes"/>
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <script src="lib/tdvplayer.js?v=1761999108412"></script>
-    <link rel="preload" href="locale/en.txt?v=1761999108412" as="fetch" crossorigin="anonymous"/>
-	<link rel="preload" href="script.js?v=1761999108412" as="script"/>
-	<link rel="preload" href="media/panorama_339A4F1C_3F42_50D8_41B5_B5F83294F696_0/r/2/0_0.webp?v=1761999108412" as="image"/>
-	<link rel="preload" href="media/panorama_339A4F1C_3F42_50D8_41B5_B5F83294F696_0/l/2/0_0.webp?v=1761999108412" as="image"/>
-	<link rel="preload" href="media/panorama_339A4F1C_3F42_50D8_41B5_B5F83294F696_0/u/2/0_0.webp?v=1761999108412" as="image"/>
-	<link rel="preload" href="media/panorama_339A4F1C_3F42_50D8_41B5_B5F83294F696_0/d/2/0_0.webp?v=1761999108412" as="image"/>
-	<link rel="preload" href="media/panorama_339A4F1C_3F42_50D8_41B5_B5F83294F696_0/f/2/0_0.webp?v=1761999108412" as="image"/>
-	<link rel="preload" href="media/panorama_339A4F1C_3F42_50D8_41B5_B5F83294F696_0/b/2/0_0.webp?v=1761999108412" as="image"/>
-	<meta name="description" content="Virtual Tour"/>
-	<meta name="theme-color" content="#FFFFFF"/>
-    <script src="script.js?v=1761999108412"></script>
+    <meta name="viewport" content="user-scalable=no, initial-scale=0.5, width=device-width, viewport-fit=cover" />
+    <link rel="preload" href="script.js?v=1768909626023" as="script"/>
+<link rel="preload" href="media/panorama_DEE941F0_D088_7853_41E4_65B7D602E28A_lq.jpeg" as="image"/>
+<meta name="description" content="Virtual Tour"/>
+    <script src="lib/tdvplayer.js"></script>
+    <script src="lib/ThreeWebGL.js"></script>
+    <script type="text/javascript">
+        var player;
+        var playersPlayingTmp = [];
+        var isInitialized = false;
+
+        function loadTour()
+        {
+            if(isInitialized)
+                return;
+
+            isInitialized = true;
+
+            var beginFunc = function(event){
+                if(event.name == 'begin')
+                {
+                    var camera = event.data.source.get('camera');
+                    if(camera && camera.get('initialSequence') && camera.get('initialSequence').get('movements').length > 0)
+                        return;
+                }
+
+                if(event.sourceClassName == "MediaAudio")
+                    return;
+
+                player.unbind('preloadMediaShow', beginFunc, player, true);
+                player.unbindOnObjectsOf('PanoramaPlayListItem', 'begin', beginFunc, player, true);
+                player.unbind('stateChange', beginFunc, player, true);
+                window.parent.postMessage("tourLoaded", '*');
+
+                disposePreloader();
+
+                onVirtualTourLoaded();
+            };
+
+            var settings = new TDV.PlayerSettings();
+            
+            settings.set(TDV.PlayerSettings.CONTAINER, document.getElementById('viewer'));
+            settings.set(TDV.PlayerSettings.SCRIPT_URL, 'script.js?v=1768909626023');
+            settings.set(TDV.PlayerSettings.FLASH_EXPRESS_INSTALLER_URL, 'lib/ExpressInstall.swf');
+            settings.set(TDV.PlayerSettings.FLASH_AUDIO_PLAYER_URL, 'lib/AudioPlayer.swf');
+            settings.set(TDV.PlayerSettings.FLASH_PANORAMA_PLAYER_URL, 'lib/PanoramaRenderer.swf');
+            settings.set(TDV.PlayerSettings.THREE_JS_WEBGL_URL, 'lib/ThreeWebGL.js');
+            settings.set(TDV.PlayerSettings.WEBVR_POLYFILL_URL, 'lib/WebVRPolyfill.js');
+            settings.set(TDV.PlayerSettings.HLS_URL, 'lib/Hls.js');
+            window.tdvplayer = player = TDV.PlayerAPI.create(settings);
+            player.bind('preloadMediaShow', beginFunc, player, true);
+            player.bind('stateChange', beginFunc, player, true);
+            player.bindOnObjectsOf('PanoramaPlayListItem', 'begin', beginFunc, player, true);
+            player.bindOnObject('rootPlayer', 'start', function(e){
+                var queryDict = {}; location.search.substr(1).split("&").forEach(function(item) {var k = item.split("=")[0], v = decodeURIComponent(item.split("=")[1]);queryDict[k] = v});
+                if("media-index" in queryDict){
+                    setMediaByIndex(parseInt(queryDict["media-index"]) - 1);
+                }
+                else if("media-name" in queryDict){
+                    setMediaByName(queryDict["media-name"]);
+                }
+
+                player.getById('rootPlayer').bind('tourEnded', function(){
+                    onVirtualTourEnded();
+                }, player, true);
+            }, player, false);
+
+            /* Listen messages */
+            window.addEventListener('message', function (e) {
+                //Listen to messages for make actions to player in the format function:param1,param2
+                var action = e.data;
+                if (action == 'pauseTour' || action == 'resumeTour') {
+                    this[action].apply(this);
+                }
+            });
+        }
+
+        function pauseTour()
+        {
+            var playLists = player.getByClassName('PlayList');
+            for(var i = 0, count = playLists.length; i<count; i++)
+            {
+                var playList = playLists[i];
+                var index = playList.get('selectedIndex');
+                if(index != -1)
+                {
+                    var item = playList.get('items')[index];
+                    var itemPlayer = item.get('player');
+                    if(itemPlayer && itemPlayer.pause)
+                    {
+                        playersPlayingTmp.push(itemPlayer);
+                        itemPlayer.pause();
+                    }
+                }
+            }
+
+            player.getById('pauseGlobalAudios')();
+        }
+
+        function resumeTour()
+        {
+            while(playersPlayingTmp.length)
+            {
+                var viewer = playersPlayingTmp.pop();
+                viewer.play();
+            }
+
+            player.getById('resumeGlobalAudios')();
+        }
+
+        function onVirtualTourLoaded()
+        {
+
+        }
+
+        function onVirtualTourEnded()
+        {
+
+        }
+
+        function setMediaByIndex(index)
+        {
+            if(window.tdvplayer !== undefined) {
+                var rootPlayer = window.tdvplayer.getById('rootPlayer');
+                rootPlayer.setMainMediaByIndex(index);
+            }
+        }
+
+        function setMediaByName(name)
+        {
+            if(window.tdvplayer !== undefined) {
+                var rootPlayer = window.tdvplayer.getById('rootPlayer');
+                rootPlayer.setMainMediaByName(name);
+            }
+        }
+
+        function showPreloader()
+        {
+            var preloadContainer = document.getElementById('preloadContainer');
+            preloadContainer.style.opacity = 1;
+        }
+
+        function disposePreloader()
+        {
+            var transitionEnd = transitionEndEventName();
+            var preloadContainer = document.getElementById('preloadContainer');
+
+            
+
+            var transitionEndName = transitionEndEventName();
+            if(transitionEndName)
+            {
+                preloadContainer.addEventListener(transitionEnd, hide, false);
+
+                preloadContainer.style.opacity = 0;
+            }
+            else
+            {
+                hide();
+            }
+
+            function hide()
+            {
+                preloadContainer.style.visibility = 'hidden';
+                preloadContainer.style.display = 'none';
+            }
+
+            function transitionEndEventName () {
+                var i,
+                        undefined,
+                        el = document.createElement('div'),
+                        transitions = {
+                            'transition':'transitionend',
+                            'OTransition':'otransitionend',
+                            'MozTransition':'transitionend',
+                            'WebkitTransition':'webkitTransitionEnd'
+                        };
+
+                for (i in transitions) {
+                    if (transitions.hasOwnProperty(i) && el.style[i] !== undefined) {
+                        return transitions[i];
+                    }
+                }
+
+                return undefined;
+            }
+        }
+
+        function onBodyClick(){
+            document.body.removeEventListener("click", onBodyClick);
+            document.body.removeEventListener("touchend", onBodyClick);
+            loadTour();
+        }
+
+        function onLoad() {
+            if (isOVRWeb()){
+                showPreloader();
+                loadTour();
+                return;
+            }
+
+            showPreloader();
+loadTour()
+        }
+
+        function playVideo(video) {
+            function isSafariDesktopV11orGreater() {
+                return /^((?!chrome|android|crios|ipad|iphone).)*safari/i.test(navigator.userAgent) && parseFloat(/Version\/([0-9]+\.[0-9]+)/i.exec(navigator.userAgent)[1]) >= 11;
+            }
+
+            function detectUserAction() {
+                var onVideoClick = function(e) {
+                    if(video.paused) {
+                        video.play();
+                    }
+                    video.muted = false;
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    video.removeEventListener('click', onVideoClick);
+                    video.removeEventListener('touchend', onVideoClick);
+                };
+                video.addEventListener("click", onVideoClick);
+                video.addEventListener("touchend", onVideoClick);
+            }
+
+            if (isSafariDesktopV11orGreater()) {
+                video.muted = true;
+                video.play();
+            } else {
+                var canPlay = true;
+                var promise = video.play();
+                if (promise) {
+                    promise.catch(function() {
+                        video.muted = true;
+                        video.play();
+                        detectUserAction();
+                    });
+                } else {
+                    canPlay = false;
+                }
+
+                if (!canPlay || video.muted) {
+                    detectUserAction();
+                }
+            }
+        }
+
+        function isOVRWeb(){
+            return window.location.hash.substring(1).split('&').indexOf('ovrweb') > -1;
+        }
+    </script>
     <style type="text/css">
-        html, body { height:100%; width:100%; height:100vh; width:100vw; margin:0; padding:0; overflow:hidden; }
-        .fill-viewport { position:fixed; top:0; left:0; right:0; bottom:0; padding:0; margin:0; overflow: hidden; }
-        .fill-viewport.landscape-left { left: env(safe-area-inset-left); }
-		.fill-viewport.landscape-right { right: env(safe-area-inset-right); }
-        #viewer { z-index:1; }
-        #preloadContainer { z-index:2; opacity:0; background-color:rgba(255,255,255,1); transition: opacity 0.5s; -webkit-transition: opacity 0.5s; -moz-transition: opacity 0.5s; -o-transition: opacity 0.5s;}
+        html, body { background-color: #0066FF;  width: 100%; height: 100%; margin: 0; padding: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+
+        #viewer { background-color: #0066FF; z-index:1; position:absolute; width: 100%; height: 100%; top: 0; }
+        #preloadContainer { z-index:2; position:relative; width:100%; height:100%; transition: opacity 1s; -webkit-transition: opacity 1s; -moz-transition: opacity 1s; -o-transition: opacity 1s;}
     </style>
-    <link rel="stylesheet" href="fonts.css?v=1761999108412">
+    
 </head>
-<body>
-    <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666665vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Loading virtual tour. Please wait...</SPAN></DIV><DIV STYLE="text-align:center;font-size:1.6666666666666665vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">created with the trial of 3DVista VT Pro</SPAN></DIV><DIV STYLE="text-align:center;font-size:1.4814814814814814vmin;"><A HREF="https://www.3dvista.com" TARGET="_blank" STYLE="text-decoration:none; color:inherit;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#999999;font-size:1.48vmin;font-family:Arial, Helvetica, sans-serif;"><U>www.3DVista.com</U></SPAN></A></DIV></div></div></div>
-    <div id="viewer" class="fill-viewport"></div>
+<body onload="onLoad()">
+    <div id="preloadContainer" style="background-color:rgba(0,102,255,1)"><div style="z-index: 4; position: absolute; left: 0%; top: 50%; width: 100.00%; height: 10.00%"><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;"><SPAN STYLE="letter-spacing:0vh;color:#777777;font-size:1.39vh;font-family:Arial, Helvetica, sans-serif;">Loading virtual tour. Please wait...</SPAN></DIV><p STYLE="margin:0; line-height:1.02vh;"><BR STYLE="letter-spacing:0vh;color:#000000;font-size:1.02vh;font-family:Arial, Helvetica, sans-serif;"/></p><DIV STYLE="text-align:center;"><SPAN STYLE="letter-spacing:0vh;color:#777777;font-size:1.39vh;font-family:Arial, Helvetica, sans-serif;">created with the trial of 3DVista VT Pro</SPAN></DIV><p STYLE="margin:0; line-height:1.02vh;"><BR STYLE="letter-spacing:0vh;color:#000000;font-size:1.02vh;font-family:Arial, Helvetica, sans-serif;"/></p><DIV STYLE="text-align:center;"><SPAN STYLE="letter-spacing:0vh;color:#000000;font-size:1.02vh;font-family:Arial, Helvetica, sans-serif;"><SPAN STYLE="color:#0000ff;"><A HREF="http://www.3dvista.com" TARGET="_blank" STYLE="text-decoration:none; color:inherit;"><SPAN STYLE="color:#999999;font-size:1.3vh;"><U>www.3DVista.com</U></SPAN></A></SPAN></SPAN></DIV></div></div></div>
+    <div id="viewer"></div>
 </body>
 </html>
