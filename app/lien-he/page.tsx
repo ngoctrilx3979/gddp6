@@ -10,6 +10,7 @@ export default function LienHePage() {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [sending, setSending] = useState(false); // 👈 trạng thái khi gửi email
   const [loadingPage, setLoadingPage] = useState(true); // 👈 loading khi trang đang mở
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
   useEffect(() => {
     // mô phỏng thời gian tải dữ liệu (1 giây)
@@ -23,18 +24,26 @@ export default function LienHePage() {
 
     setSending(true);
     setStatus("idle");
+    setErrorMsg("");
 
     try {
       await emailjs.sendForm(
-        "service_5q4hlev",
+        "service_9iyi552",
         "template_cmyjvna",
         form.current,
         "_de1cGyzEffrEsruY"
       );
       setStatus("success");
       form.current?.reset();
-    } catch {
+    } catch (err: any) {
       setStatus("error");
+      if (err && err.text) {
+        setErrorMsg(err.text);
+      } else if (err && err.message) {
+        setErrorMsg(err.message);
+      } else {
+        setErrorMsg("Không gửi được liên hệ. Vui lòng kiểm tra lại cấu hình hoặc thử lại sau.");
+      }
     } finally {
       setSending(false);
     }
@@ -98,9 +107,12 @@ export default function LienHePage() {
           </p>
         )}
         {status === "error" && (
-          <p className="text-red-600 mt-4 text-center font-medium">
-            ❌ Gửi email thất bại. Vui lòng thử lại!
-          </p>
+          <div className="text-red-600 mt-4 text-center font-medium">
+            ❌ Gửi email thất bại. Vui lòng thử lại!<br />
+            {errorMsg && (
+              <span className="block text-xs mt-2">{errorMsg}</span>
+            )}
+          </div>
         )}
       </div>
     </div>

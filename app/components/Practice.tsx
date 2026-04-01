@@ -130,8 +130,8 @@ export default function Practice({ lessonId, lessonContent }: PracticeProps) {
       alert("Bạn cần đăng nhập để tạo luyện tập");
       return;
     }
-    if (numQuestions < 3 || numQuestions > 5) {
-      alert("Số lượng câu hỏi phải từ 3 đến 5");
+    if (numQuestions < 3 || numQuestions > 10) {
+      alert("Số lượng câu hỏi phải từ 3 đến 10");
       return;
     }
     setLoading(true);
@@ -206,7 +206,7 @@ Yêu cầu:
             <input
               type="number"
               min={3}
-              max={5}
+              max={10}
               value={numQuestions}
               onChange={(e) => setNumQuestions(Number(e.target.value))}
               className="border p-2 w-20"
@@ -238,7 +238,7 @@ Yêu cầu:
                       if (optionValue === q.correct) {
                         optionStyle = "text-green-600 font-bold";
                       } else if (isSelected && optionValue !== q.correct) {
-                        optionStyle = "text-red-600";
+                        optionStyle = "text-pink-600";
                       }
                     }
 

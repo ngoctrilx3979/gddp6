@@ -1,7 +1,7 @@
 // lib/geminiService.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = "AIzaSyAPgwX98jew6_fq7sv1j3_jTqQWrh_jjFA";
+const apiKey = "AIzaSyCiX8bicZJKlGsMtEFxmYl07BPsiWPSgjc";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 let model: any | null = null;
