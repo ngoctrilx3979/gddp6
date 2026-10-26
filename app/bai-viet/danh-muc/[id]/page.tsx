@@ -22,10 +22,16 @@ export default function BaiVietTheoDanhMucPage() {
   }, [id]);
 
   // 👉 Hàm cắt 100 từ đầu tiên (bỏ HTML)
+  // Hàm lấy 100 từ đầu tiên, loại bỏ ký tự đặc biệt, giữ chữ thường
   const getExcerpt = (html: string, wordCount: number = 100): string => {
     if (!html) return "";
-    const text = html.replace(/<[^>]+>/g, " ");
-    const words = text.trim().split(/\s+/);
+    // Loại bỏ thẻ HTML và các ký tự đặc biệt, chuyển về khoảng trắng
+    let text = html.replace(/<[^>]+>/g, " ").replace(/&[a-zA-Z0-9#]+;/g, " ");
+    // Loại bỏ các ký tự không phải chữ, số, dấu tiếng Việt, dấu chấm, phẩy
+    text = text.replace(/[^\p{L}\p{N}\s.,-]/gu, "");
+    // Rút gọn khoảng trắng
+    text = text.replace(/\s+/g, " ").trim();
+    const words = text.split(" ");
     return (
       words.slice(0, wordCount).join(" ") +
       (words.length > wordCount ? "..." : "")
@@ -89,7 +95,8 @@ export default function BaiVietTheoDanhMucPage() {
                       )
                     : ""}
                 </p>
-                <p className="text-gray-700 leading-relaxed">
+                {/* Hiển thị mô tả rút gọn, chữ thường, không ký tự đặc biệt */}
+                <p className="text-base text-gray-800 leading-relaxed font-normal">
                   {getExcerpt(post.description || "")}
                 </p>
               </div>

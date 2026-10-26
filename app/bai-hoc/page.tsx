@@ -195,41 +195,77 @@ export default function BaiHocPage() {
       {/* List */}
       <h2 className="text-xl font-semibold mb-2">Danh sách bài học</h2>
       <ul className="space-y-2">
-        {lessons.map((lesson) => (
-          <li
-            key={lesson.id}
-            className="bg-gray-100 p-4 rounded flex justify-between items-center"
-          >
-            <div>
-              <h3 className="font-bold">{lesson.title}</h3>
-              <p className="text-sm text-gray-600">
-                {lesson.createdAt?.seconds
-                  ? new Date(lesson.createdAt.seconds * 1000).toLocaleString(
-                      'vi-VN'
-                    )
-                  : '---'}
-                {' | Chủ đề: '}
-                {topics.find((t) => t.id === lesson.topicId)?.name || '---'}
-              </p>
-            </div>
-
-            <div className="space-x-2">
-              <button
-                onClick={() => handleEdit(lesson)}
-                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-              >
-                Sửa
-              </button>
-
-              <button
-                onClick={() => handleDelete(lesson.id)}
-                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-              >
-                Xóa
-              </button>
-            </div>
-          </li>
-        ))}
+        {lessons.map((lesson) => {
+          // Lấy ảnh đầu tiên trong mô tả
+          const getFirstImage = (html) => {
+            if (!html) return null;
+            const match = html.match(/<img[^>]+src=["']([^"'>]+)["']/i);
+            return match ? match[1] : null;
+          };
+          // Lấy 100 từ đầu, loại ký tự đặc biệt
+          const getExcerpt = (html, wordCount = 100) => {
+            if (!html) return "";
+            let text = html.replace(/<[^>]+>/g, " ").replace(/&[a-zA-Z0-9#]+;/g, " ");
+            text = text.replace(/[^\p{L}\p{N}\s.,-]/gu, "");
+            text = text.replace(/\s+/g, " ").trim();
+            const words = text.split(" ");
+            return (
+              words.slice(0, wordCount).join(" ") +
+              (words.length > wordCount ? "..." : "")
+            );
+          };
+          const imageUrl = getFirstImage(lesson.description || "");
+          return (
+            <li
+              key={lesson.id}
+              className="bg-gray-100 p-4 rounded flex items-start gap-4"
+            >
+              {/* Ảnh đại diện */}
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={lesson.title}
+                  width={100}
+                  height={100}
+                  className="object-cover w-[100px] h-[100px] rounded"
+                  style={{ flexShrink: 0 }}
+                />
+              ) : (
+                <div className="w-[100px] h-[100px] bg-gray-300 flex items-center justify-center text-gray-500 text-xs rounded">
+                  Không có ảnh
+                </div>
+              )}
+              {/* Nội dung */}
+              <div className="flex-1">
+                <h3 className="font-bold text-blue-700 mb-1">{lesson.title}</h3>
+                <p className="text-sm text-gray-600 mb-1">
+                  {lesson.createdAt?.seconds
+                    ? new Date(lesson.createdAt.seconds * 1000).toLocaleString('vi-VN')
+                    : '---'}
+                  {' | Chủ đề: '}
+                  {topics.find((t) => t.id === lesson.topicId)?.name || '---'}
+                </p>
+                <p className="text-base text-gray-800 leading-relaxed font-normal">
+                  {getExcerpt(lesson.description || "")}
+                </p>
+              </div>
+              <div className="space-x-2 flex flex-col justify-between">
+                <button
+                  onClick={() => handleEdit(lesson)}
+                  className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                >
+                  Sửa
+                </button>
+                <button
+                  onClick={() => handleDelete(lesson.id)}
+                  className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                >
+                  Xóa
+                </button>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       {hasMore && (

@@ -21,10 +21,13 @@ export default function BaiHocTheoChuDePage() {
   }, [id]);
 
   // 👉 Cắt 100 từ đầu tiên, loại bỏ HTML
+  // Hàm lấy 100 từ đầu tiên, loại bỏ ký tự đặc biệt, giữ chữ thường
   const getExcerpt = (html: string, wordCount: number = 100): string => {
     if (!html) return "";
-    const text = html.replace(/<[^>]+>/g, " ");
-    const words = text.trim().split(/\s+/);
+    let text = html.replace(/<[^>]+>/g, " ").replace(/&[a-zA-Z0-9#]+;/g, " ");
+    text = text.replace(/[^\p{L}\p{N}\s.,-]/gu, "");
+    text = text.replace(/\s+/g, " ").trim();
+    const words = text.split(" ");
     return (
       words.slice(0, wordCount).join(" ") +
       (words.length > wordCount ? "..." : "")
@@ -76,9 +79,10 @@ export default function BaiHocTheoChuDePage() {
               {/* 👇 Nội dung bên phải */}
               <div className="flex-1 p-4">
                 <Link key={lesson.id} href={`/bai-hoc/${lesson.id}`}>
-                <h2 className="text-xl font-semibold text-blue-600 mb-1">
-                  {lesson.title}
-                </h2></Link>
+                  <h2 className="text-xl font-semibold text-blue-600 mb-1">
+                    {lesson.title}
+                  </h2>
+                </Link>
                 <p className="text-sm text-gray-500 mb-2">
                   {lesson.createdAt?.seconds
                     ? new Date(lesson.createdAt.seconds * 1000).toLocaleDateString(
@@ -86,7 +90,8 @@ export default function BaiHocTheoChuDePage() {
                       )
                     : ""}
                 </p>
-                <p className="text-gray-700 leading-relaxed">
+                {/* Hiển thị mô tả rút gọn, chữ thường, không ký tự đặc biệt */}
+                <p className="text-base text-gray-800 leading-relaxed font-normal">
                   {getExcerpt(lesson.description || "")}
                 </p>
               </div>
